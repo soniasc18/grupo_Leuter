@@ -32,39 +32,31 @@ export default class Principal extends React.Component {
               <label>Clave:   <input type="password" name="Clave" id="Clave" placeholder="password" autoComplete="off"/></label>
             </Row>
           </form>
-          <button /*style={{ pointerEvents:  "none" }}*/ onClick={this.botonClick}>{this.props.cabecera}</button>
+          <button onClick={this.botonClick}>{this.props.cabecera}</button>
         </div>
       );
     }else if (this.props.cabecera == "Inicio sesión"){
-      console.log(this.props.data);
       while(this.props.data !== null && this.props.data.payload.loginFields.warehouses !== undefined){
-        let aux = this.props.data.payload.loginFields.warehouses.map((member, index) => {
-          {index};
+        let warehouses = this.props.data.payload.loginFields.warehouses.map((element, index) => {
+          return(
+            <option>{element}</option>
+          );
         });
-        let selector = this.props.data.payload.loginFields.warehouses.map((member)=> {
-          for (var i=0; i<aux.length; i++){
-            console.log(member);
-            return member;
-          }
+        let machines = this.props.data.payload.loginFields.machines.map((element, index) => {
+          return(
+            <option>{element}</option>
+          );
         });
-        console.log(selector);
+        let languages = this.props.data.payload.loginFields.machines.map((element, index) => {
+          return(
+            <option>{element}</option>
+          );
+        });
         return (
-          <div>Almacén
-            <select id="almacen">
-                <option>{this.props.data.payload.loginFields.warehouses[0]}</option>
-                <option>{this.props.data.payload.loginFields.warehouses[1]}</option>
-                <option>{this.props.data.payload.loginFields.warehouses[2]}</option>
-            </select>
-            <select id="maquina">
-                <option>{this.props.data.payload.loginFields.machines[0]}</option>
-                <option>{this.props.data.payload.loginFields.machines[1]}</option>
-                <option>{this.props.data.payload.loginFields.machines[2]}</option>
-            </select>
-            <select id="idioma">
-                <option>{this.props.data.payload.loginFields.languages[0]}</option>
-                <option>{this.props.data.payload.loginFields.languages[1]}</option>
-                <option>{this.props.data.payload.loginFields.languages[2]}</option>
-            </select>
+          <div>
+            <div>Almacén: <select id="almacen">{warehouses}</select></div>
+            <div>Máquinas: <select id="maquina">{machines}</select></div>
+            <div>Idiomas: <select id="idioma">{languages}</select></div>
             <button className="login" onClick={this.botonClick}>{this.props.cabecera}</button>
           </div>
         );
