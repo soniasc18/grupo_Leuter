@@ -8,7 +8,7 @@ export default class Principal extends React.Component {
     super(props);
     this.state = {
       document: document,
-      url: this.props.debug ? "http://dominio.com?empresa=123456&operario=SUP" : window.location.href,
+      url: this.props.debug ? "http://dominio.com?empresa=123456&operario=PASS" : window.location.href,
     }
     this.botonClick = this.botonClick.bind(this);
   }
@@ -87,9 +87,7 @@ export default class Principal extends React.Component {
         </div>
       );
     }
-
   }
-
 
   botonClick(){
     if(this.props.cabecera == "LogIn"){
@@ -97,8 +95,7 @@ export default class Principal extends React.Component {
       var usuario = document.getElementById("Usuario").value;
       var clave = document.getElementById("Clave").value;
       if(empresa === "" || usuario === "" || clave === ""){
-        console.log("Rellena todo el formulario")
-        //alert
+        window.alert("Rellena todo el formulario")
       }
       else{
         this.props.appClick(this.props.cabecera, document);
@@ -111,7 +108,7 @@ export default class Principal extends React.Component {
       if (clave === newClave){
         this.props.appClick(this.props.cabecera, document);
       }else{
-        console.log("Las contraseñas no coinciden");
+        window.alert("Las contraseñas no coinciden")
       }
     }
   }
