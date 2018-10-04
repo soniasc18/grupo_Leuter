@@ -24,12 +24,12 @@ export default class App extends React.Component {
 
   handleData(e) {
     let result = JSON.parse(e.data);
+    console.log("OK");
     this.setState({
       data: result,
     });
     console.log(result);
     if(this.state.cabecera === "Inicio sesión"){
-      console.log("INICIO");
       //si queremos pasar a la segunda pantalla comprobamos la clave y luego
       //si el usuario es la primera vez que accede
       if(result.payload.data_code!=="OK"){
@@ -38,12 +38,10 @@ export default class App extends React.Component {
           cabecera: "LogIn"
         });
       }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN"){
-        console.log("FDASFASDFASDF");
         this.setState({
           cabecera: "Inicio sesión"
         });
       }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "NEW_PASS"){
-        console.log("FDSAFASD");
         this.setState({
           cabecera: "Cambiar clave"
         });
@@ -70,6 +68,7 @@ export default class App extends React.Component {
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
       console.log(connection)
+      console.log(this.state);
     }else if(prevState.cabecera === "Inicio sesión" &&this.state.cabecera==="Menú"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
@@ -101,18 +100,18 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
-      console.log(connection)
     }
   }
 
-  componentDidMount(){
+/*  componentDidMount(){
     this.setState({
       input1: document.getElementById("Usuario").value,
       input2: document.getElementById("Empresa").value,
     });
   }
-
+*/
   render() {
+    console.log("rend");
     return (
       <Grid>
         <Row className="Cabecera">
@@ -134,9 +133,16 @@ export default class App extends React.Component {
   }
 
   appClick(cabecera, document) {
-    if (cabecera == "LogIn" || cabecera == "Cambiar clave"){ //cabecera indica de qué pantalla venimos
+    if (cabecera == "LogIn"){ //cabecera indica de qué pantalla venimos
       this.setState({
         cabecera: "Inicio sesión", //cabecera: "LogIn", --> check componentDidUpdate
+        input1: document.getElementById("Usuario").value,
+        input2: document.getElementById("Empresa").value,
+        input3: document.getElementById("Clave").value,
+      });
+    }else if(cabecera == "Cambiar clave"){
+      this.setState({
+        cabecera: "Inicio sesión",
         input3: document.getElementById("Clave").value,
       });
     }else if (cabecera == "Inicio sesión"){
