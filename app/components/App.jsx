@@ -24,20 +24,14 @@ export default class App extends React.Component {
 
   handleData(e) {
     let result = JSON.parse(e.data);
-    console.log("OK");
     this.setState({
       data: result,
     });
-    console.log(result);
-    if(this.state.cabecera === "Inicio sesión"){
-      //si queremos pasar a la segunda pantalla comprobamos la clave y luego
-      //si el usuario es la primera vez que accede
+    if(this.state.cabecera === "LogIn"){
       if(result.payload.data_code!=="OK"){
-        //ERROR en Clave
-        this.setState({
-          cabecera: "LogIn"
-        });
-      }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN"){
+        console.log("Credenciales erroneas");
+//        window.alert("Las contraseñas no coinciden")
+      }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
         this.setState({
           cabecera: "Inicio sesión"
         });
@@ -53,10 +47,9 @@ export default class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState){
     let url = "ws://mock.grupoleuter.com"
-    if (this.state.input3 !== null && prevState.cabecera === "LogIn" && this.state.cabecera==="Inicio sesión"){
-      //si no es null es pq ya han hecho click y se ha metido el valor de la clave en el estado
+    if (this.state.input3 !== null && prevState.cabecera === "LogIn" && this.state.cabecera==="LogIn"){
       let connection = new WebSocket(url+'/login');
-      let json_test=JSON.stringify( //El que envio al servidor
+      let json_test=JSON.stringify(
        {"device_type":"browser",
        "message_type":"LOGIN",
        "payload": {"loginFields":
@@ -67,8 +60,6 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
-      console.log(connection)
-      console.log(this.state);
     }else if(prevState.cabecera === "Inicio sesión" &&this.state.cabecera==="Menú"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
@@ -85,7 +76,6 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
-    //  console.log(connection)
   }else if(prevState.cabecera === "Cambiar clave" && this.state.cabecera==="Inicio sesión"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
@@ -103,15 +93,7 @@ export default class App extends React.Component {
     }
   }
 
-/*  componentDidMount(){
-    this.setState({
-      input1: document.getElementById("Usuario").value,
-      input2: document.getElementById("Empresa").value,
-    });
-  }
-*/
   render() {
-    console.log("rend");
     return (
       <Grid>
         <Row className="Cabecera">
@@ -133,9 +115,8 @@ export default class App extends React.Component {
   }
 
   appClick(cabecera, document) {
-    if (cabecera == "LogIn"){ //cabecera indica de qué pantalla venimos
+    if (cabecera == "LogIn"){
       this.setState({
-        cabecera: "Inicio sesión", //cabecera: "LogIn", --> check componentDidUpdate
         input1: document.getElementById("Usuario").value,
         input2: document.getElementById("Empresa").value,
         input3: document.getElementById("Clave").value,
