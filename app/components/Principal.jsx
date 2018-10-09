@@ -9,6 +9,7 @@ export default class Principal extends React.Component {
     this.state = {
       document: document,
       url: this.props.debug ? "http://dominio.com?empresa=123456&operario=SUP" : window.location.href,
+      seleccion: 0,
     }
     this.botonClick = this.botonClick.bind(this);
   }
@@ -81,11 +82,34 @@ export default class Principal extends React.Component {
       return (
         <div>
           <Row>Escoja una opción</Row>
-          <Row><button onClick={this.botonClick}>Entradas</button></Row>
-          <Row><button onClick={this.botonClick}>Salidas</button></Row>
-          <Row><button onClick={this.botonClick}>Control</button></Row>
+          <Row><button onClick={this.seleccionClick}>Entradas</button></Row>
+          <Row><button onClick={this.seleccionClick}>Salidas</button></Row>
+          <Row><button onClick={this.seleccionClick}>Control</button></Row>
+          <Row>
+            <button onClick={this.botonClick}>Seleccionar</button>
+            <button onClick={this.abajoClick}>Arriba</button>
+            <button onClick={this.arribaClick}>Abajo</button>
+          </Row>
         </div>
       );
+    }
+  }
+
+  arribaClick(){
+    if(this.state.seleccion > 0){
+      let aux = this.state.seleccion - 1
+      this.setState({
+        seleccion: aux,
+      });
+    }
+  }
+
+  abajoClick(){
+    if(this.state.seleccion < 2){
+      let aux = this.state.seleccion + 1
+      this.setState({
+        seleccion: aux,
+      });
     }
   }
 
@@ -110,6 +134,9 @@ export default class Principal extends React.Component {
       }else{
         window.alert("Las contraseñas no coinciden")
       }
+    }else if(this.props.cabecera == "Menú"){
+
+      console.log("Seleccion: "+this.state.seleccion);
     }
   }
 }

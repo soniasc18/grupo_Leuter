@@ -27,6 +27,7 @@ export default class App extends React.Component {
     this.setState({
       data: result,
     });
+    console.log(result);
     if(this.state.cabecera === "LogIn"){
       if(result.payload.data_code!=="OK"){
         console.log("Credenciales erroneas");
