@@ -15,25 +15,25 @@ export default class Principal extends React.Component {
   }
 
   render() {
-    if (this.props.cabecera == "LogIn"){
+    if (this.props.cabecera == "Login"){
       let url = new URL(this.state.url);
       let empresa = url.searchParams.get("empresa")
       let operario = url.searchParams.get("operario")
       return (
         <div>
-          <form>
+          <form className="login">
             <Row className="input">
-              <label>Empresa: <input type="text" name="Empresa" id="Empresa" defaultValue={empresa}/>
+              <label>Empresa: <input type="text" className="login-input" name="Empresa" id="Empresa" placeholder="123456" defaultValue={empresa}/>
               </label>
             </Row>
             <Row className="input">
-              <label>Operario: <input type="text" name="Usuario" id="Usuario" defaultValue={operario}/></label>
+              <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" defaultValue={operario}/></label>
             </Row>
             <Row className="input">
-              <label>Clave:   <input type="password" name="Clave" id="Clave" placeholder="password" autoComplete="off"/></label>
+              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off" autoFocus/></label>
             </Row>
           </form>
-          <button onClick={this.botonClick}>{this.props.cabecera}</button>
+          <button onClick={this.botonClick}>Log in</button>
         </div>
       );
     }else if (this.props.cabecera == "Inicio sesión"){
@@ -68,11 +68,11 @@ export default class Principal extends React.Component {
         <div>
           <form>
             <Row className="input">
-              <label>Nueva contraseña: <input type="password" name="Clave" id="Clave"/>
+              <label>Nueva contraseña: <input type="password" name="Clave" id="Clave" placeholder="Escribe la nueva contraseña" autoComplete="off"/>
               </label>
             </Row>
             <Row className="input">
-              <label>Repita contraseña: <input type="password" name="NewClave" id="NewClave"/></label>
+              <label>Repita contraseña: <input type="password" name="NewClave" id="NewClave" autoComplete="off"/></label>
             </Row>
           </form>
           <button onClick={this.botonClick}>{this.props.cabecera}</button>
@@ -114,7 +114,7 @@ export default class Principal extends React.Component {
   }
 
   botonClick(){
-    if(this.props.cabecera == "LogIn"){
+    if(this.props.cabecera == "Login"){
       var empresa = document.getElementById("Empresa").value;
       var usuario = document.getElementById("Usuario").value;
       var clave = document.getElementById("Clave").value;

@@ -10,7 +10,7 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      cabecera: "LogIn",
+      cabecera: "Login",
       inferior: "Salir",
       debug: true,
       input1: null, //usuario, maquina
@@ -28,7 +28,7 @@ export default class App extends React.Component {
       data: result,
     });
     console.log(result);
-    if(this.state.cabecera === "LogIn"){
+    if(this.state.cabecera === "Login"){
       if(result.payload.data_code!=="OK"){
         console.log("Credenciales erroneas");
 //        window.alert("Las contraseñas no coinciden")
@@ -48,7 +48,7 @@ export default class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState){
     let url = "ws://mock.grupoleuter.com"
-    if (this.state.input3 !== null && prevState.cabecera === "LogIn" && this.state.cabecera==="LogIn"){
+    if (this.state.input3 !== null && prevState.cabecera === "Login" && this.state.cabecera==="Login"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
        {"device_type":"browser",
@@ -97,7 +97,7 @@ export default class App extends React.Component {
   render() {
     return (
       <Grid>
-        <Row className="Cabecera">
+        <Row>
           <Superior cabecera={this.state.cabecera}/>
         </Row>
         <Row className="Ppal">
@@ -116,7 +116,7 @@ export default class App extends React.Component {
   }
 
   appClick(cabecera, document) {
-    if (cabecera == "LogIn"){
+    if (cabecera == "Login"){
       this.setState({
         input1: document.getElementById("Usuario").value,
         input2: document.getElementById("Empresa").value,
@@ -139,7 +139,7 @@ export default class App extends React.Component {
 
   salirClick() {
     this.setState({
-      cabecera: "LogIn"
+      cabecera: "Login"
     });
   }
 

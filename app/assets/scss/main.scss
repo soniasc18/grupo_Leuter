@@ -4,12 +4,24 @@ body {
   color: $color;
 }*/
 
+button{
+  text-decoration: none;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #ffffff;
+    background-color:#58ACFA;
+    border-radius: 10px;
+    border: 0px solid #58ACFA;
+    margin-top: 0.5em;
+}
+
 body {
   text-align: center;
-  color: #000000;
-  font-family: 'Titillium Web', sans-serif;
+  background: #F2F2F2;
 
-  .Cabecera{
+  .titulo{
+    font-family: 'Titillium Web', sans-serif;
     display: block;
     font-size: 2em;
     margin-block-start: 0.67em;
@@ -17,7 +29,7 @@ body {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
     font-weight: bold;
-    color: #F781D8
+    color: #58ACFA
   }.Ppal{
     display: block;
     font-size: 1.2em;

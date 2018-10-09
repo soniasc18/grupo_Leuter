@@ -4,7 +4,7 @@ export default class Superior extends React.Component {
 
   render() {
     return (
-      <header className="cabecera">
+      <header className="titulo">
         <b>{this.props.cabecera}</b>
       </header>
     );  }
