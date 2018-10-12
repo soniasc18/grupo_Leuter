@@ -12,6 +12,8 @@ export default class Principal extends React.Component {
       seleccion: 0,
     }
     this.botonClick = this.botonClick.bind(this);
+    this.abajoClick = this.abajoClick.bind(this);
+    this.arribaClick = this.arribaClick.bind(this);
   }
 
   render() {
@@ -30,7 +32,7 @@ export default class Principal extends React.Component {
               <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" defaultValue={operario}/></label>
             </Row>
             <Row className="input">
-              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off" autoFocus/></label>
+              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" defaultValue={operario} autoComplete="off" autoFocus/></label>
             </Row>
           </form>
           <button onClick={this.botonClick}>Log in</button>
@@ -79,19 +81,63 @@ export default class Principal extends React.Component {
         </div>
       );
     }else if (this.props.cabecera == "Menú"){
-      return (
-        <div>
-          <Row>Escoja una opción</Row>
-          <Row><button onClick={this.seleccionClick}>Entradas</button></Row>
-          <Row><button onClick={this.seleccionClick}>Salidas</button></Row>
-          <Row><button onClick={this.seleccionClick}>Control</button></Row>
-          <Row>
-            <button onClick={this.botonClick}>Seleccionar</button>
-            <button onClick={this.abajoClick}>Arriba</button>
-            <button onClick={this.arribaClick}>Abajo</button>
-          </Row>
-        </div>
-      );
+      if(this.props.index===-1){
+        let i=0
+        if(this.props.data !== null && i===0&& this.props.data.payload.menu!== undefined){
+          i=1;
+          let arr= [];
+          arr.push(this.props.data.payload.menu.map((element, index) => {
+            let e = element.item_text;
+            return(<Row><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
+          }));
+          return (
+            <div>
+              <Row>Escoja una opción</Row>
+              {arr}
+              <Row>
+                <button onClick={this.botonClick}>Seleccionar</button>
+                <button onClick={this.arribaClick}>Arriba</button>
+                <button onClick={this.abajoClick}>Abajo</button>
+              </Row>
+            </div>
+          );
+        }
+        return null;
+      }
+      else if(this.props.keyp === undefined){
+        let i=0;
+        if(i===0 && this.props.data.payload.menu!== undefined){
+          i=1;
+          if(this.props.data.payload.menu[this.props.index].hasChild){
+            let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
+              return(<Row><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
+            });
+            return sol;
+          }
+          return null;
+        }
+        return null;
+      }else if(this.props.keyp !== undefined && this.props.data.payload.data_code==="ACTION_NEW"){ //keyp!===undefined
+        let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
+          if(element.text !== "Salir"){
+            let texto = element.code + ": " + element.text;
+            return(
+              <button onClick={()=>this.props.appClick(this.props.cabecera, index, element.text)}>{texto}</button>
+            );
+          }
+          return null;
+        });
+        return(
+            <div>
+              <Row><div>{this.props.data.payload.screenContent.title}</div></Row>
+              <Row><div>{this.props.data.payload.screenContent.content}</div></Row>
+              <Row><div>{this.props.data.payload.screenContent.message}</div></Row>
+              <Row><input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/></Row>
+              <Row>{botones}</Row>
+            </div>
+        );
+      }
+      return null;
     }
   }
 
@@ -134,9 +180,9 @@ export default class Principal extends React.Component {
       }else{
         window.alert("Las contraseñas no coinciden")
       }
-    }else if(this.props.cabecera == "Menú"){
+    }else if(this.props.cabecera==="Menú"){
+      this.props.appClick(this.props.cabecera, this.state.seleccion);
 
-      console.log("Seleccion: "+this.state.seleccion);
     }
   }
 }

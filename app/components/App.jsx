@@ -17,6 +17,8 @@ export default class App extends React.Component {
       input2: null, //empresa, almacen
       input3: null, //clave, idioma
       data: null,
+      index:-1,
+      keyp:undefined,
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
@@ -34,16 +36,17 @@ export default class App extends React.Component {
 //        window.alert("Las contraseñas no coinciden")
       }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
         this.setState({
-          cabecera: "Inicio sesión"
+          cabecera: "Inicio sesión",
+          token: result.token,
         });
       }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "NEW_PASS"){
         this.setState({
           cabecera: "Cambiar clave"
         });
       }
-    }else if(this.state.cabecera === "Menú"){
-      console.log("waitt");
-    }
+    }/*else if(this.state.cabecera === "Menú"){
+      console.log(result);
+    }*/
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -51,7 +54,7 @@ export default class App extends React.Component {
     if (this.state.input3 !== null && prevState.cabecera === "Login" && this.state.cabecera==="Login"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
-       {"device_type":"browser",
+       {"device_type":"Browser",
        "message_type":"LOGIN",
        "payload": {"loginFields":
           {"username":this.state.input1,
@@ -64,11 +67,11 @@ export default class App extends React.Component {
     }else if(prevState.cabecera === "Inicio sesión" &&this.state.cabecera==="Menú"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
-        {"device_type":"browser",
-          "token": this.state.data.token,
+        {"device_type":"Browser",
+          "token": this.state.token,
           "message_type":"LOGIN",
           "payload":{
-            "data_code":"LOGIN_MENU",
+            "data_code":"MENU",
             "loginFields":{
             "selectedWarehouse": this.state.input2,
             "selectedLanguage": this.state.input3,
@@ -80,8 +83,8 @@ export default class App extends React.Component {
   }else if(prevState.cabecera === "Cambiar clave" && this.state.cabecera==="Inicio sesión"){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
-        {"device_type":"browser",
-          "token": this.state.data.token,
+        {"device_type":"Browser",
+          "token": this.state.token,
           "message_type":"LOGIN",
           "payload":{
             "data_code":"LOGIN_NEW_PASS",
@@ -91,6 +94,36 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
+    }else if(prevState.keyp !==this.state.keyp && this.state.cabecera==="Menú" && this.state.keyp !== undefined){
+      if(this.state.keyp === "Enviar"){
+        let connection = new WebSocket(url+'/action');
+        let json_test=JSON.stringify(
+          {"device_type":"Browser",
+            "token": this.state.token,
+            "message_type":"ACTION_TAKEN",
+            "payload":{
+              "data_code":"ACTION_TAKEN",
+              "input": this.state.keyp
+            }});
+        connection.onopen = () => connection.send(json_test)
+        connection.onerror = () => console.log("ERROR")
+        connection.onmessage = this.handleData.bind(this);
+        console.log(json_test);
+        console.log(connection);
+      }else{
+        let connection = new WebSocket(url+'/action');
+        let json_test=JSON.stringify(
+          {"device_type":"Browser",
+            "token": this.state.token,
+            "message_type":"ACTION",
+            "payload":{
+              "data_code":"ACTION_MENU",
+              "selectedMenu": this.state.keyp
+            }});
+        connection.onopen = () => connection.send(json_test)
+        connection.onerror = () => console.log("ERROR")
+        connection.onmessage = this.handleData.bind(this);
+      }
     }
   }
 
@@ -105,6 +138,8 @@ export default class App extends React.Component {
             cabecera={this.state.cabecera}
             debug={this.state.debug}
             data={this.state.data}
+            index={this.state.index}
+            keyp={this.state.keyp}
             appClick={this.appClick}/>
         </Row>
         <Row className="Pie">
@@ -115,7 +150,7 @@ export default class App extends React.Component {
     );
   }
 
-  appClick(cabecera, document) {
+  appClick(cabecera, document, keyp) {
     if (cabecera == "Login"){
       this.setState({
         input1: document.getElementById("Usuario").value,
@@ -134,6 +169,12 @@ export default class App extends React.Component {
         input2: document.getElementById("almacen").value,
         input3: document.getElementById("idioma").value,
       });
+    }else if(cabecera == "Menú"){
+        this.setState({
+          cabecera: "Menú",
+          index: document,
+          keyp: keyp,
+        });
     }
   }
 

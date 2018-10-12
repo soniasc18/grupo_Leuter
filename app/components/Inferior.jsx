@@ -9,7 +9,7 @@ export default class Inferior extends React.Component {
 
   render() {
     return (
-      <button onClick={this.botonClick}>Salir</button>
+      <button onClick={this.botonClick}>F8: Salir</button>
     );  }
 
     botonClick(){
