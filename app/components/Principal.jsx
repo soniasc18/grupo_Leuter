@@ -38,21 +38,22 @@ export default class Principal extends React.Component {
           <button onClick={this.botonClick}>Log in</button>
         </div>
       );
-    }else if (this.props.cabecera == "Inicio sesión"){
+    }
+    else if (this.props.cabecera == "Inicio sesión"){
       while(this.props.data !== null && this.props.data.payload.loginFields.warehouses !== undefined){
         let warehouses = this.props.data.payload.loginFields.warehouses.map((element, index) => {
           return(
-            <option>{element}</option>
+            <option key={index}>{element}</option>
           );
         });
         let machines = this.props.data.payload.loginFields.machines.map((element, index) => {
           return(
-            <option>{element}</option>
+            <option key={index}>{element}</option>
           );
         });
         let languages = this.props.data.payload.loginFields.machines.map((element, index) => {
           return(
-            <option>{element}</option>
+            <option key={index}>{element}</option>
           );
         });
         return (
@@ -65,7 +66,8 @@ export default class Principal extends React.Component {
         );
       }
       return null;
-    }else if (this.props.cabecera == "Cambiar clave"){
+    }
+    else if (this.props.cabecera == "Cambiar clave"){
       return (
         <div>
           <form>
@@ -80,15 +82,20 @@ export default class Principal extends React.Component {
           <button onClick={this.botonClick}>{this.props.cabecera}</button>
         </div>
       );
-    }else if (this.props.cabecera == "Menú"){
-      if(this.props.index===-1){
+    }
+    else if (this.props.cabecera == "Menú"){
+      if(this.props.index===-1){ //primera pantalla del menú (Elemento1, Elemento2...)
         let i=0
-        if(this.props.data !== null && i===0&& this.props.data.payload.menu!== undefined){
+        if(i===0 && this.props.data !== null && this.props.data.payload.menu!== undefined){
           i=1;
           let arr= [];
           arr.push(this.props.data.payload.menu.map((element, index) => {
             let e = element.item_text;
-            return(<Row><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
+            if(element.hasChild){
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
+            }else{
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
+            }
           }));
           return (
             <div>
@@ -104,40 +111,43 @@ export default class Principal extends React.Component {
         }
         return null;
       }
-      else if(this.props.keyp === undefined){
-        let i=0;
-        if(i===0 && this.props.data.payload.menu!== undefined){
-          i=1;
-          if(this.props.data.payload.menu[this.props.index].hasChild){
-            let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
-              return(<Row><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
-            });
-            return sol;
-          }
+      else{
+        if(this.props.keyp===undefined && this.props.data.payload.menu!== undefined){ //hay hijos
+          let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
+            if(element.hasChild){
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{element.item_text}</button></Row>);
+            }else{
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
+            }
+          });
+          return sol;
+        }
+        else if(this.props.keyp!==undefined && this.props.data.payload.screenContent!== undefined){
+          let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
+            if(element.text !== "Salir"){
+              let texto = element.code + ": " + element.text;
+              return(
+                <button key={index} onClick={()=>this.props.appClick(this.props.cabecera, index, document.getElementById("menu-input").value)}>{texto}</button>
+              );
+            }
+            return null;
+          });
+          return(
+              <div>
+                <Row><div>{this.props.data.payload.screenContent.title}</div></Row>
+                <Row><div>{this.props.data.payload.screenContent.content}</div></Row>
+                <Row><div>{this.props.data.payload.screenContent.message}</div></Row>
+                <Row><input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/></Row>
+                <Row>{botones}</Row>
+              </div>
+          );
+          return null;
+        }else{
+          //retornar los elementos iniciales
           return null;
         }
-        return null;
-      }else if(this.props.keyp !== undefined && this.props.data.payload.data_code==="ACTION_NEW"){ //keyp!===undefined
-        let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
-          if(element.text !== "Salir"){
-            let texto = element.code + ": " + element.text;
-            return(
-              <button onClick={()=>this.props.appClick(this.props.cabecera, index, element.text)}>{texto}</button>
-            );
-          }
-          return null;
-        });
-        return(
-            <div>
-              <Row><div>{this.props.data.payload.screenContent.title}</div></Row>
-              <Row><div>{this.props.data.payload.screenContent.content}</div></Row>
-              <Row><div>{this.props.data.payload.screenContent.message}</div></Row>
-              <Row><input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/></Row>
-              <Row>{botones}</Row>
-            </div>
-        );
+
       }
-      return null;
     }
   }
 
