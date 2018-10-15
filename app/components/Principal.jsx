@@ -10,13 +10,18 @@ export default class Principal extends React.Component {
       document: document,
       url: this.props.debug ? "http://dominio.com?empresa=123456&operario=SUP" : window.location.href,
       seleccion: 0,
+      valueinput1: "",
+      valueinput2: "",
     }
     this.botonClick = this.botonClick.bind(this);
     this.abajoClick = this.abajoClick.bind(this);
     this.arribaClick = this.arribaClick.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+
   }
 
   render() {
+    console.log("render??");
     if (this.props.cabecera == "Login"){
       let url = new URL(this.state.url);
       let empresa = url.searchParams.get("empresa")
@@ -32,10 +37,27 @@ export default class Principal extends React.Component {
               <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" defaultValue={operario}/></label>
             </Row>
             <Row className="input">
-              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" defaultValue={operario} autoComplete="off" autoFocus/></label>
+              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off" autoFocus/></label>
             </Row>
           </form>
           <button onClick={this.botonClick}>Log in</button>
+        </div>
+      );
+    }
+    else if (this.props.cabecera == "Cambiar clave"){
+      console.log("cambiar clave");
+      return (
+        <div>
+          <form className="newpass">
+            <Row className="input">
+              <label>Nueva contraseña: <input type="text" onChange={this.handleChange} name="Clave" id="Clave" placeholder="Escribe la nueva contraseña" autoComplete="off" value={this.state.valueinput1}/>
+              </label>
+            </Row>
+            <Row className="input">
+              <label>Repita contraseña: <input type="password" onChange={this.handleChange} name="NewClave" id="NewClave" autoComplete="off" value={this.state.valueinput2}/></label>
+            </Row>
+          </form>
+          <button onClick={this.botonClick}>{this.props.cabecera}</button>
         </div>
       );
     }
@@ -67,27 +89,9 @@ export default class Principal extends React.Component {
       }
       return null;
     }
-    else if (this.props.cabecera == "Cambiar clave"){
-      return (
-        <div>
-          <form>
-            <Row className="input">
-              <label>Nueva contraseña: <input type="password" name="Clave" id="Clave" placeholder="Escribe la nueva contraseña" autoComplete="off"/>
-              </label>
-            </Row>
-            <Row className="input">
-              <label>Repita contraseña: <input type="password" name="NewClave" id="NewClave" autoComplete="off"/></label>
-            </Row>
-          </form>
-          <button onClick={this.botonClick}>{this.props.cabecera}</button>
-        </div>
-      );
-    }
     else if (this.props.cabecera == "Menú"){
       if(this.props.index===-1){ //primera pantalla del menú (Elemento1, Elemento2...)
-        let i=0
-        if(i===0 && this.props.data !== null && this.props.data.payload.menu!== undefined){
-          i=1;
+        if(this.props.data !== null && this.props.data.payload.menu!== undefined){
           let arr= [];
           arr.push(this.props.data.payload.menu.map((element, index) => {
             let e = element.item_text;
@@ -127,7 +131,7 @@ export default class Principal extends React.Component {
             if(element.text !== "Salir"){
               let texto = element.code + ": " + element.text;
               return(
-                <button key={index} onClick={()=>this.props.appClick(this.props.cabecera, index, document.getElementById("menu-input").value)}>{texto}</button>
+                <button key={index} onClick={()=>this.props.appClick(this.props.cabecera, index, undefined, document.getElementById("menu-input").value)}>{texto}</button>
               );
             }
             return null;
@@ -142,12 +146,31 @@ export default class Principal extends React.Component {
               </div>
           );
           return null;
-        }else{
-          //retornar los elementos iniciales
-          return null;
         }
-
+        return null;
       }
+    }
+    else{
+      let arr= [];
+      arr.push(this.props.menu.map((element, index) => {
+        let e = element.item_text;
+        if(element.hasChild){
+          return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
+        }else{
+          return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
+        }
+      }));
+      return (
+        <div>
+          <Row>Escoja una opción</Row>
+          {arr}
+          <Row>
+            <button onClick={this.botonClick}>Seleccionar</button>
+            <button onClick={this.arribaClick}>Arriba</button>
+            <button onClick={this.abajoClick}>Abajo</button>
+          </Row>
+        </div>
+      );
     }
   }
 
@@ -169,6 +192,18 @@ export default class Principal extends React.Component {
     }
   }
 
+  handleChange(e){
+    if(e.target.name==="Clave"){
+      this.setState({
+        valueinput1: e.target.value,
+      });
+    }else if(e.target.name==="NewClave"){
+      this.setState({
+        valueinput2: e.target.value,
+      });
+    }
+  }
+
   botonClick(){
     if(this.props.cabecera == "Login"){
       var empresa = document.getElementById("Empresa").value;
@@ -183,16 +218,13 @@ export default class Principal extends React.Component {
     }else if (this.props.cabecera == "Inicio sesión"){
       this.props.appClick(this.props.cabecera, document);
     }else if(this.props.cabecera == "Cambiar clave"){
-      var clave = document.getElementById("Clave").value;
-      var newClave = document.getElementById("NewClave").value;
-      if (clave === newClave){
+      if (document.getElementById("Clave").value === document.getElementById("NewClave").value){
         this.props.appClick(this.props.cabecera, document);
       }else{
         window.alert("Las contraseñas no coinciden")
       }
-    }else if(this.props.cabecera==="Menú"){
+    }else if(this.props.cabecera === "Menú"){
       this.props.appClick(this.props.cabecera, this.state.seleccion);
-
     }
   }
 }
