@@ -10,6 +10,7 @@ export default class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      tunel: false,
       cabecera: "Login",
       inferior: "Salir",
       debug: true,
@@ -19,63 +20,67 @@ export default class App extends React.Component {
       data: null,
       index:-1,
       keyp:undefined,
-      i:0,
-      inputt: "escaner", //escaneado
+      wait: false,
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
   }
 
   handleData(e) {
+    console.log("handleData");
     let result = JSON.parse(e.data);
-    this.setState({
-      data: result,
-    });
+    console.log(result);
     if(result.payload.menu!==undefined){
       this.setState({
         menu:result.payload.menu,
       });
     }
-    if(this.state.cabecera === "Login"){
+    if(this.state.cabecera === "Login"){ //vengo de login
       if(result.payload.data_code!=="OK"){
-        if(this.state.i===0){
-          this.setState({
-            i:1,
-          });
-          window.alert("Las contraseñas no coinciden")
-        }
+        window.alert("Las contraseñas no coinciden")
       }
       else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
         this.setState({
           cabecera: "Inicio sesión",
           token: result.token,
-        //  menu:result.payload.menu,
+          data: result,
         });
-      }else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "NEW_PASS"){
+      }
+      else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "NEW_PASS"){
         this.setState({
           cabecera: "Cambiar clave",
           token: result.token,
+          data: result,
         });
       }
+    }
+    else if(this.state.cabecera==="Inicio sesión" && result.payload.data_code==="OK"){
+      //aqui index es -1, pero es que ademas nextstep es ACTION_MENU
+      this.setState({
+        cabecera: "Menú",
+        data: result,
+      });
     }
     else if(this.state.cabecera === "Menú"){
-      if(result.payload.data_code==="OK"){
+      if(result.payload.data_code === "ACTION_NEW"){
         this.setState({
-          index: -1,
-        });
-      }else{
-        this.setState({
-          cabecera: "Menú"
+          data: result,
         });
       }
-
+      else if(result.payload.data_code === "OK"){
+        this.setState({
+          index: -1,
+          data: result,
+        });
+      }
     }
-    console.log(result);
   }
 
   componentDidUpdate(prevProps, prevState){
-    let url = "ws://mock.grupoleuter.com"
-    if (prevState.cabecera === "Login" && this.state.cabecera==="Login" && this.state.input3 !== null){
+    console.log("componentDidUpdate");
+    console.log(this.state);
+    let url = "ws://mock.grupoleuter.com";
+    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
        {"device_type":"Browser",
@@ -88,8 +93,10 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
+      this.setState({tunel:true,});
     }
-    else if(prevState.cabecera === "Cambiar clave" && this.state.cabecera==="Inicio sesión"){
+    else if(this.state.cabecera==="Cambiar clave" && prevState.cabecera === this.state.cabecera){
+      console.log("YAS");
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
         {"device_type":"browser",
@@ -103,9 +110,8 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
-      console.log(json_test);
     }
-    else if(prevState.cabecera === "Inicio sesión" && this.state.cabecera==="Menú"){
+    else if(this.state.cabecera==="Inicio sesión" && prevState.cabecera === this.state.cabecera){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
         {"device_type":"Browser",
@@ -122,8 +128,8 @@ export default class App extends React.Component {
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
     }
-    else if(this.state.cabecera==="Menú" && this.state.keyp !== undefined && prevState.keyp !== this.state.keyp){
-      if(this.state.inputt === ""){
+    else if(this.state.cabecera==="Menú"){
+      if(this.state.keyp !== undefined && prevState.keyp !== this.state.keyp && this.state.inputt === undefined){
         let connection = new WebSocket(url+'/action');
         let json_test=JSON.stringify(
           {"device_type":"Browser",
@@ -136,7 +142,11 @@ export default class App extends React.Component {
         connection.onopen = () => connection.send(json_test)
         connection.onerror = () => console.log("ERROR")
         connection.onmessage = this.handleData.bind(this);
-      }else{
+      }
+      else if(this.state.keyp === undefined && !this.state.wait && this.state.inputt !== undefined){
+        //justo antes de entrar al else if este prevState.keyp no era undefined, al reves con inputt
+        this.setState({wait:true});
+        console.log("acabo de cambiar wait a 2");
         let connection = new WebSocket(url+'/action');
         let json_test=JSON.stringify(
           {"device_type":"Browser",
@@ -155,7 +165,6 @@ export default class App extends React.Component {
   }
 
   render() {
-    console.log(this.state);
     return (
       <Grid className="container">
         <Row>
@@ -180,6 +189,7 @@ export default class App extends React.Component {
   }
 
   appClick(cabecera, document, keyp, inputt) {
+    console.log("appClick + wait: "+this.state.wait);
     if (cabecera == "Login"){
       this.setState({
         input1: document.getElementById("Usuario").value,
@@ -188,23 +198,21 @@ export default class App extends React.Component {
       });
     }else if(cabecera == "Cambiar clave"){
       this.setState({
-        cabecera: "Inicio sesión",
         input3: document.getElementById("Clave").value,
       });
     }else if (cabecera == "Inicio sesión"){
       this.setState({
-        cabecera: "Menú",
         input1: document.getElementById("maquina").value,
         input2: document.getElementById("almacen").value,
         input3: document.getElementById("idioma").value,
       });
     }else if(cabecera == "Menú"){
-      console.log(inputt);
       this.setState({
-        cabecera: "Menú",
+        //si sigue habiendo hijos keyp tendrá undefined
         index: document,
         keyp: keyp,
         inputt: inputt,
+        wait:false,
       });
     }
   }

@@ -21,7 +21,7 @@ export default class Principal extends React.Component {
   }
 
   render() {
-    console.log("render??");
+    console.log("render");
     if (this.props.cabecera == "Login"){
       let url = new URL(this.state.url);
       let empresa = url.searchParams.get("empresa")
@@ -37,7 +37,7 @@ export default class Principal extends React.Component {
               <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" defaultValue={operario}/></label>
             </Row>
             <Row className="input">
-              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off" autoFocus/></label>
+              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off"defaultValue={operario} autoFocus/></label>
             </Row>
           </form>
           <button onClick={this.botonClick}>Log in</button>
@@ -45,7 +45,6 @@ export default class Principal extends React.Component {
       );
     }
     else if (this.props.cabecera == "Cambiar clave"){
-      console.log("cambiar clave");
       return (
         <div>
           <form className="newpass">
@@ -96,6 +95,32 @@ export default class Principal extends React.Component {
           arr.push(this.props.data.payload.menu.map((element, index) => {
             let e = element.item_text;
             if(element.hasChild){
+              //si hay hijos bajo ese boton que estoy preparando solo le paso el index del boton que clicko
+              //si no hay hijos le paso el index, que realmente no sirve para nada mas que para saber cual pintar, y la item_key que ira en al json
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
+            }else{
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
+            }
+          }));
+          return (
+            <div>
+              <Row>Escoja una opción</Row>
+              {arr}
+              <Row>
+                <button onClick={this.botonClick}>Seleccionar</button>
+                <button onClick={this.arribaClick}>Arriba</button>
+                <button onClick={this.abajoClick}>Abajo</button>
+              </Row>
+            </div>
+          );
+        }
+        else if(this.props.data!==null && this.props.data.payload.data_code==="OK"){
+          let arr= [];
+          arr.push(this.props.menu.map((element, index) => {
+            let e = element.item_text;
+            if(element.hasChild){
+              //si hay hijos bajo ese boton que estoy preparando solo le paso el index del boton que clicko
+              //si no hay hijos le paso el index, que realmente no sirve para nada mas que para saber cual pintar, y la item_key que ira en al json
               return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
             }else{
               return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
@@ -126,7 +151,8 @@ export default class Principal extends React.Component {
           });
           return sol;
         }
-        else if(this.props.keyp!==undefined && this.props.data.payload.screenContent!== undefined){
+        else if(this.props.data!==null && this.props.data.payload.data_code==="ACTION_NEW" && this.props.data.payload.screenContent!== undefined){
+          console.log("He entrado aquí");
           let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
             if(element.text !== "Salir"){
               let texto = element.code + ": " + element.text;
@@ -215,7 +241,8 @@ export default class Principal extends React.Component {
       else{
         this.props.appClick(this.props.cabecera, document);
       }
-    }else if (this.props.cabecera == "Inicio sesión"){
+    }
+    else if (this.props.cabecera == "Inicio sesión"){
       this.props.appClick(this.props.cabecera, document);
     }else if(this.props.cabecera == "Cambiar clave"){
       if (document.getElementById("Clave").value === document.getElementById("NewClave").value){
@@ -223,7 +250,8 @@ export default class Principal extends React.Component {
       }else{
         window.alert("Las contraseñas no coinciden")
       }
-    }else if(this.props.cabecera === "Menú"){
+    }
+    else if(this.props.cabecera === "Menú"){
       this.props.appClick(this.props.cabecera, this.state.seleccion);
     }
   }
