@@ -12,7 +12,6 @@ export default class App extends React.Component {
     this.state = {
       tunel: false,
       cabecera: "Login",
-      inferior: "Salir",
       debug: true,
       input1: null, //usuario, maquina
       input2: null, //empresa, almacen
@@ -27,9 +26,7 @@ export default class App extends React.Component {
   }
 
   handleData(e) {
-    console.log("handleData");
     let result = JSON.parse(e.data);
-    console.log(result);
     if(result.payload.menu!==undefined){
       this.setState({
         menu:result.payload.menu,
@@ -60,6 +57,7 @@ export default class App extends React.Component {
         cabecera: "Menú",
         data: result,
       });
+      console.log(this.state);
     }
     else if(this.state.cabecera === "Menú"){
       if(result.payload.data_code === "ACTION_NEW"){
@@ -70,6 +68,7 @@ export default class App extends React.Component {
       else if(result.payload.data_code === "OK"){
         this.setState({
           index: -1,
+          inputt: undefined,
           data: result,
         });
       }
@@ -77,8 +76,6 @@ export default class App extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState){
-    console.log("componentDidUpdate");
-    console.log(this.state);
     let url = "ws://mock.grupoleuter.com";
     if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel){
       let connection = new WebSocket(url+'/login');
@@ -96,7 +93,6 @@ export default class App extends React.Component {
       this.setState({tunel:true,});
     }
     else if(this.state.cabecera==="Cambiar clave" && prevState.cabecera === this.state.cabecera){
-      console.log("YAS");
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
         {"device_type":"browser",
@@ -146,7 +142,6 @@ export default class App extends React.Component {
       else if(this.state.keyp === undefined && !this.state.wait && this.state.inputt !== undefined){
         //justo antes de entrar al else if este prevState.keyp no era undefined, al reves con inputt
         this.setState({wait:true});
-        console.log("acabo de cambiar wait a 2");
         let connection = new WebSocket(url+'/action');
         let json_test=JSON.stringify(
           {"device_type":"Browser",
@@ -156,7 +151,6 @@ export default class App extends React.Component {
               "data_code":"ACTION_TAKEN",
               "input": this.state.inputt,
             }});
-            console.log(json_test);
         connection.onopen = () => connection.send(json_test)
         connection.onerror = () => console.log("ERROR")
         connection.onmessage = this.handleData.bind(this);
@@ -189,7 +183,6 @@ export default class App extends React.Component {
   }
 
   appClick(cabecera, document, keyp, inputt) {
-    console.log("appClick + wait: "+this.state.wait);
     if (cabecera == "Login"){
       this.setState({
         input1: document.getElementById("Usuario").value,
@@ -207,6 +200,7 @@ export default class App extends React.Component {
         input3: document.getElementById("idioma").value,
       });
     }else if(cabecera == "Menú"){
+      console.log("keyp: "+keyp);
       this.setState({
         //si sigue habiendo hijos keyp tendrá undefined
         index: document,
@@ -214,20 +208,21 @@ export default class App extends React.Component {
         inputt: inputt,
         wait:false,
       });
+      console.log(this.state);
     }
   }
 
   salirClick() {
     this.setState({
+      tunel: false,
       cabecera: "Login",
-      inferior: "Salir",
-      debug: true,
       input1: null,
       input2: null,
       input3: null,
       data: null,
       index:-1,
       keyp:undefined,
+      wait: false,
     });
   }
 

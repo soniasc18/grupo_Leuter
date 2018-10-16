@@ -21,8 +21,7 @@ export default class Principal extends React.Component {
   }
 
   render() {
-    console.log("render");
-    if (this.props.cabecera == "Login"){
+    if (this.props.cabecera === "Login"){
       let url = new URL(this.state.url);
       let empresa = url.searchParams.get("empresa")
       let operario = url.searchParams.get("operario")
@@ -89,8 +88,8 @@ export default class Principal extends React.Component {
       return null;
     }
     else if (this.props.cabecera == "Menú"){
-      if(this.props.index===-1){ //primera pantalla del menú (Elemento1, Elemento2...)
-        if(this.props.data !== null && this.props.data.payload.menu!== undefined){
+      if(this.props.index === -1 && this.props.data !== null){ //primera pantalla del menú (Elemento1, Elemento2...)
+        if(this.props.data.payload.menu !== undefined){
           let arr= [];
           arr.push(this.props.data.payload.menu.map((element, index) => {
             let e = element.item_text;
@@ -114,7 +113,7 @@ export default class Principal extends React.Component {
             </div>
           );
         }
-        else if(this.props.data!==null && this.props.data.payload.data_code==="OK"){
+        else if(this.props.data.payload.data_code === "OK"){
           let arr= [];
           arr.push(this.props.menu.map((element, index) => {
             let e = element.item_text;
@@ -141,7 +140,8 @@ export default class Principal extends React.Component {
         return null;
       }
       else{
-        if(this.props.keyp===undefined && this.props.data.payload.menu!== undefined){ //hay hijos
+        console.log("yass");
+        if(this.props.keyp === undefined && this.props.data.payload.menu !== undefined){ //hay hijos
           let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
             if(element.hasChild){
               return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{element.item_text}</button></Row>);
@@ -151,8 +151,17 @@ export default class Principal extends React.Component {
           });
           return sol;
         }
-        else if(this.props.data!==null && this.props.data.payload.data_code==="ACTION_NEW" && this.props.data.payload.screenContent!== undefined){
-          console.log("He entrado aquí");
+        else if(this.props.data.payload.data_code === "OK"){
+          let sol = this.props.menu[this.props.index].children.map((element, index)=>{
+            if(element.hasChild){
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{element.item_text}</button></Row>);
+            }else{
+              return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
+            }
+          });
+          return sol;
+        }
+        else if(this.props.data !== null && this.props.data.payload.data_code === "ACTION_NEW" && this.props.data.payload.screenContent !== undefined){
           let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
             if(element.text !== "Salir"){
               let texto = element.code + ": " + element.text;
@@ -219,11 +228,11 @@ export default class Principal extends React.Component {
   }
 
   handleChange(e){
-    if(e.target.name==="Clave"){
+    if(e.target.name === "Clave"){
       this.setState({
         valueinput1: e.target.value,
       });
-    }else if(e.target.name==="NewClave"){
+    }else if(e.target.name === "NewClave"){
       this.setState({
         valueinput2: e.target.value,
       });
