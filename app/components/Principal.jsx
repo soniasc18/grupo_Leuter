@@ -8,7 +8,7 @@ export default class Principal extends React.Component {
     super(props);
     this.state = {
       document: document,
-      url: this.props.debug ? "http://dominio.com?empresa=123456&operario=SUP" : window.location.href,
+      url: this.props.debug ? "http://terminal.grupoleuter.com?empresa=123456&operario=SUP" : window.location.href,
       seleccion: 0,
       valueinput1: "",
       valueinput2: "",
@@ -29,16 +29,17 @@ export default class Principal extends React.Component {
         <div>
           <form className="login">
             <Row className="input">
-              <label>Empresa: <input type="text" className="login-input" name="Empresa" id="Empresa" placeholder="123456" defaultValue={empresa}/>
+              <label>Empresa: <input type="text" className="login-input" name="Empresa" id="Empresa" placeholder="Introduce código de empresa" defaultValue={empresa}/>
               </label>
             </Row>
             <Row className="input">
-              <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" defaultValue={operario}/></label>
+              <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" placeholder="Introduce id de operario" defaultValue={operario}/></label>
             </Row>
             <Row className="input">
-              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off"defaultValue={operario} autoFocus/></label>
+              <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off"placeholder="Introduce clave" defaultValue={operario} autoFocus/></label>
             </Row>
           </form>
+          <h5 style={{visibility:!this.props.visible?"hidden":"visible"}}>Credenciales incorrectas</h5>
           <button onClick={this.botonClick}>Log in</button>
         </div>
       );
@@ -52,7 +53,7 @@ export default class Principal extends React.Component {
               </label>
             </Row>
             <Row className="input">
-              <label>Repita contraseña: <input type="password" onChange={this.handleChange} name="NewClave" id="NewClave" autoComplete="off" value={this.state.valueinput2}/></label>
+              <label>Repita contraseña: <input type="password" onChange={this.handleChange} name="NewClave" id="NewClave" placeholder="Repite la contraseña" autoComplete="off" value={this.state.valueinput2}/></label>
             </Row>
           </form>
           <button onClick={this.botonClick}>{this.props.cabecera}</button>
@@ -71,7 +72,7 @@ export default class Principal extends React.Component {
             <option key={index}>{element}</option>
           );
         });
-        let languages = this.props.data.payload.loginFields.machines.map((element, index) => {
+        let languages = this.props.data.payload.loginFields.languages.map((element, index) => {
           return(
             <option key={index}>{element}</option>
           );
@@ -140,7 +141,6 @@ export default class Principal extends React.Component {
         return null;
       }
       else{
-        console.log("yass");
         if(this.props.keyp === undefined && this.props.data.payload.menu !== undefined){ //hay hijos
           let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
             if(element.hasChild){
@@ -264,4 +264,5 @@ export default class Principal extends React.Component {
       this.props.appClick(this.props.cabecera, this.state.seleccion);
     }
   }
+
 }

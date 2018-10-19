@@ -20,6 +20,8 @@ export default class App extends React.Component {
       index:-1,
       keyp:undefined,
       wait: false,
+      connection: undefined,
+      visible: false,
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
@@ -27,20 +29,25 @@ export default class App extends React.Component {
 
   handleData(e) {
     let result = JSON.parse(e.data);
+    console.log(result);
     if(result.payload.menu!==undefined){
       this.setState({
         menu:result.payload.menu,
       });
     }
-    if(this.state.cabecera === "Login"){ //vengo de login
+    if(this.state.cabecera === "Login"){
+      //vengo de login
       if(result.payload.data_code!=="OK"){
-        window.alert("Las contraseñas no coinciden")
+      this.setState({visible: true,});
+      console.log("Credenciales incorrectas");
       }
       else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
         this.setState({
           cabecera: "Inicio sesión",
           token: result.token,
           data: result,
+          tunel:true,
+          visible: false,
         });
       }
       else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "NEW_PASS"){
@@ -48,6 +55,8 @@ export default class App extends React.Component {
           cabecera: "Cambiar clave",
           token: result.token,
           data: result,
+          tunel:true,
+          visible: false,
         });
       }
     }
@@ -57,7 +66,6 @@ export default class App extends React.Component {
         cabecera: "Menú",
         data: result,
       });
-      console.log(this.state);
     }
     else if(this.state.cabecera === "Menú"){
       if(result.payload.data_code === "ACTION_NEW"){
@@ -77,7 +85,7 @@ export default class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState){
     let url = "ws://mock.grupoleuter.com";
-    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel){
+    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel && !this.state.visible){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
        {"device_type":"Browser",
@@ -88,9 +96,10 @@ export default class App extends React.Component {
            "company":this.state.input2},
           "data_code":"LOGIN_FIRST"}});
       connection.onopen = () => connection.send(json_test)
+      connection.onclose = () => console.log("onclose");
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
-      this.setState({tunel:true,});
+      console.log(connection);
     }
     else if(this.state.cabecera==="Cambiar clave" && prevState.cabecera === this.state.cabecera){
       let connection = new WebSocket(url+'/login');
@@ -106,6 +115,7 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
+      console.log(connection);
     }
     else if(this.state.cabecera==="Inicio sesión" && prevState.cabecera === this.state.cabecera){
       let connection = new WebSocket(url+'/login');
@@ -123,6 +133,7 @@ export default class App extends React.Component {
       connection.onopen = () => connection.send(json_test)
       connection.onerror = () => console.log("ERROR")
       connection.onmessage = this.handleData.bind(this);
+      console.log(connection);
     }
     else if(this.state.cabecera==="Menú"){
       if(this.state.keyp !== undefined && prevState.keyp !== this.state.keyp && this.state.inputt === undefined){
@@ -138,6 +149,7 @@ export default class App extends React.Component {
         connection.onopen = () => connection.send(json_test)
         connection.onerror = () => console.log("ERROR")
         connection.onmessage = this.handleData.bind(this);
+        console.log(connection);
       }
       else if(this.state.keyp === undefined && !this.state.wait && this.state.inputt !== undefined){
         //justo antes de entrar al else if este prevState.keyp no era undefined, al reves con inputt
@@ -154,6 +166,7 @@ export default class App extends React.Component {
         connection.onopen = () => connection.send(json_test)
         connection.onerror = () => console.log("ERROR")
         connection.onmessage = this.handleData.bind(this);
+        console.log(connection);
       }
     }
   }
@@ -172,6 +185,7 @@ export default class App extends React.Component {
             index={this.state.index}
             keyp={this.state.keyp}
             menu={this.state.menu}
+            visible={this.state.visible}
             appClick={this.appClick}/>
         </Row>
         <Row className="Pie">
@@ -189,18 +203,20 @@ export default class App extends React.Component {
         input2: document.getElementById("Empresa").value,
         input3: document.getElementById("Clave").value,
       });
-    }else if(cabecera == "Cambiar clave"){
+    }
+    else if(cabecera == "Cambiar clave"){
       this.setState({
         input3: document.getElementById("Clave").value,
       });
-    }else if (cabecera == "Inicio sesión"){
+    }
+    else if (cabecera == "Inicio sesión"){
       this.setState({
         input1: document.getElementById("maquina").value,
         input2: document.getElementById("almacen").value,
         input3: document.getElementById("idioma").value,
       });
-    }else if(cabecera == "Menú"){
-      console.log("keyp: "+keyp);
+    }
+    else if(cabecera == "Menú"){
       this.setState({
         //si sigue habiendo hijos keyp tendrá undefined
         index: document,
@@ -208,7 +224,6 @@ export default class App extends React.Component {
         inputt: inputt,
         wait:false,
       });
-      console.log(this.state);
     }
   }
 
@@ -223,6 +238,7 @@ export default class App extends React.Component {
       index:-1,
       keyp:undefined,
       wait: false,
+      visible: false,
     });
   }
 
