@@ -22,6 +22,12 @@ export default class Principal extends React.Component {
 
   render() {
     if (this.props.cabecera === "Login"){
+      let visibility = "hidden"
+      if(this.props.data !== null){
+        if(this.props.data.payload.data_code==="ALREADY_LOGGED_IN"){
+          visibility="visible";
+        }
+      }
       let url = new URL(this.state.url);
       let empresa = url.searchParams.get("empresa")
       let operario = url.searchParams.get("operario")
@@ -40,6 +46,7 @@ export default class Principal extends React.Component {
             </Row>
           </form>
           <h5 style={{visibility:!this.props.visible?"hidden":"visible"}}>Credenciales incorrectas</h5>
+          <h5 style={{visibility:visibility}}>Sesión ya iniciada</h5>
           <button onClick={this.botonClick}>Log in</button>
         </div>
       );

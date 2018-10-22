@@ -60,7 +60,7 @@ export default class App extends React.Component {
         });
       }
     }
-    else if(this.state.cabecera==="Inicio sesión" && result.payload.data_code==="OK"){
+    else if(this.state.cabecera==="Inicio sesión" && result.payload.data_code==="OK"&& result.payload.loginFields.nextStep !== "LOGIN_MENU"){
       //aqui index es -1, pero es que ademas nextstep es ACTION_MENU
       this.setState({
         cabecera: "Menú",
@@ -85,7 +85,7 @@ export default class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState){
     let url = "ws://mock.grupoleuter.com";
-    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel && !this.state.visible){
+    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel){
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
        {"device_type":"Browser",
