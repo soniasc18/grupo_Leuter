@@ -24,6 +24,7 @@ export default class Principal extends React.Component {
     if (this.props.cabecera === "Login"){
       let visibility = "hidden"
       if(this.props.data !== null){
+        this.props.data.payload.data_code="ALREADY_LOGGED_IN";
         if(this.props.data.payload.data_code==="ALREADY_LOGGED_IN"){
           visibility="visible";
         }

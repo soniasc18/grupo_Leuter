@@ -22,6 +22,7 @@ export default class App extends React.Component {
       wait: false,
       connection: undefined,
       visible: false,
+      click:true,
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
@@ -38,7 +39,7 @@ export default class App extends React.Component {
     if(this.state.cabecera === "Login"){
       //vengo de login
       if(result.payload.data_code!=="OK"){
-      this.setState({visible: true,});
+        this.setState({visible: true,click:false,});
       console.log("Credenciales incorrectas");
       }
       else if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
@@ -85,7 +86,14 @@ export default class App extends React.Component {
 
   componentDidUpdate(prevProps, prevState){
     let url = "ws://mock.grupoleuter.com";
-    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel){
+    if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel && this.state.click){
+      //hacer que cuando le des click solo entre aqui una vez, ya sea metiendo otro atributo o lo que sea
+      //pq si entra aqui mas de una vez no deja de enviar msg al servidor
+      //pero aqui debe entrar tanto si el mensajito esta visible porque te hayas equivocado
+      //como si no esta visible porque hayas acertado (en este caso seria la primera vez que entramos)
+      //si es la primera vez que entras aux=0 siempre envias msg al servidor, y ya pones el mensajito visible
+      //al estar el mensajito visible y aux ya no ser 0
+      //if((aux===0 && !visible) || (aux===0 && visible))
       let connection = new WebSocket(url+'/login');
       let json_test=JSON.stringify(
        {"device_type":"Browser",
@@ -202,6 +210,8 @@ export default class App extends React.Component {
         input1: document.getElementById("Usuario").value,
         input2: document.getElementById("Empresa").value,
         input3: document.getElementById("Clave").value,
+        visible: false,
+        click: true,
       });
     }
     else if(cabecera == "Cambiar clave"){
