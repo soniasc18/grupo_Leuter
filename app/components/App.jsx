@@ -81,11 +81,21 @@ export default class App extends React.Component {
           data: result,
         });
       }
+    }else if(this.state.cabecera === "Cambiar clave"){      
+      if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
+        this.setState({
+          cabecera: "Inicio sesión",
+          data: result,
+          tunel:true,
+          visible: false,
+        });
+      }
     }
   }
 
   componentDidUpdate(prevProps, prevState){
-    let url = "ws://mock.grupoleuter.com";
+    //let url = "ws://api.grupoleuter.com";
+    let url = "ws://localhost:8080/compassapi";
     if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel && this.state.click){
       //hacer que cuando le des click solo entre aqui una vez, ya sea metiendo otro atributo o lo que sea
       //pq si entra aqui mas de una vez no deja de enviar msg al servidor

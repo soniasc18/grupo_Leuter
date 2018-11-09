@@ -8,7 +8,7 @@
     "clean": "rimraf dist",
     "production": "cross-env npm run clean && webpack --config webpack.production.config.js --progress --profile --colors",
     "lint": "eslint --fix **/*.js **/*.jsx **/*.es6 --ignore-pattern node_modules/ --ignore-pattern dist",
-    "deploy": "aws s3 sync dist/ s3://compass-api-front",
+    "deploy": "aws s3 sync dist/ s3://terminal.nadunet.es",
     "test": "jest",
     "test:watch": "jest --watch",
     "coverage": "jest --coverage",
