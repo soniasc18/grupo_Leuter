@@ -1,5 +1,7 @@
 import React from 'react';
 import { Grid, Row, Col } from 'react-bootstrap';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
 import Websocket from 'react-websocket';
 import RaisedButton from 'material-ui/RaisedButton';
 import CircularProgress from 'material-ui/CircularProgress';
@@ -10,13 +12,18 @@ import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import ActionLogin from 'material-ui/svg-icons/action/lock-open';
 import ActionStart from 'material-ui/svg-icons/action/done';
+import ActionSettings from 'material-ui/svg-icons/action/settings';
 import FontIcon from 'material-ui/FontIcon';
 import AppBar from 'material-ui/AppBar';
+import MenuItemCore from '@material-ui/core/MenuItem';
+import MenuList from '@material-ui/core/MenuList';
+import Button from '@material-ui/core/Button';
 
 
-const styles = {
+const styles = theme => ({
   button: {
     margin: 12,
+    alignSelf: 'stretch'
   },
   exampleImageInput: {
     cursor: 'pointer',
@@ -28,9 +35,22 @@ const styles = {
     width: '100%',
     opacity: 0,
   },
-};
+  menuItem: {
+    '&:focus': {
+      backgroundColor: theme.palette.primary.main,
+      '& $primary, & $icon': {
+        color: theme.palette.common.white,
+      },
+    },
+  },
+  primary: {},
+  icon: {},
+  button: {
+    margin: theme.spacing.unit,
+  },
+});
 
-export default class Principal extends React.Component {
+class Principal extends React.Component {
 
   constructor(props) {
     super(props);
@@ -38,6 +58,8 @@ export default class Principal extends React.Component {
     let url = new URL(this.props.debug ? "http://terminal.grupoleuter.com?empresa=123456&operario=SUP" : window.location.href);
     let empresaURL = url.searchParams.get("empresa");
     let operarioURL = url.searchParams.get("operario");
+
+    history.replaceState({}, document.title, "/");
 
     this.state = {
       document: document,
@@ -48,9 +70,11 @@ export default class Principal extends React.Component {
       almacen: "",
       maquina: "",
       idioma: "",
-      empresa: empresaURL,
-      operario: operarioURL,
-      clave: ""
+      empresa: empresaURL ? empresaURL : "",
+      operario: operarioURL ? operarioURL : "",
+      clave: "", 
+      inputTerminal: "",
+      actionId: 0
     }
     this.botonClick = this.botonClick.bind(this);
     this.abajoClick = this.abajoClick.bind(this);
@@ -62,8 +86,12 @@ export default class Principal extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const colorVolver = "primary";
     console.log("Cabecera en Principal: -" + this.props.cabecera + "-");
     console.log("isLoading en Principal: -" + this.props.isLoading + "-");
+
+    if(this.state.actionId != this.props.actionId) this.setState({inputTerminal: "", actionId: this.props.actionId});
 
     if(this.props.isLoading){
       return (
@@ -137,16 +165,30 @@ export default class Principal extends React.Component {
       else if (this.props.cabecera == "Cambiar clave"){
         return (
           <div>
-            <form className="newpass">
-              <Row className="input">
-                <label>Nueva contraseña: <input type="text" onChange={this.handleChange} name="Clave" id="Clave" placeholder="Escribe la nueva contraseña" autoComplete="off" value={this.state.valueinput1}/>
-                </label>
-              </Row>
-              <Row className="input">
-                <label>Repita contraseña: <input type="password" onChange={this.handleChange} name="NewClave" id="NewClave" placeholder="Repite la contraseña" autoComplete="off" value={this.state.valueinput2}/></label>
-              </Row>
-            </form>
-            <button onClick={this.botonClick}>{this.props.cabecera}</button>
+            <TextField
+              hintText="Password"
+              floatingLabelText="Nueva contraseña"
+              value={this.state.valueinput1}
+              id="Clave"
+              onChange={(e, value) => this.setState({valueinput1: value})}
+              type="password"
+              autoFocus
+            /><br />
+            <TextField
+              hintText="Password"
+              floatingLabelText="Repetir la contraseña"
+              value={this.state.valueinput2}
+              id="NewClave"
+              onChange={(e, value) => this.setState({valueinput2: value})}
+              type="password"
+            /><br />
+            <RaisedButton
+              label="Guardar"
+              primary={true}
+              style={styles.button}
+              icon={<ActionSettings />}
+              onClick={this.botonClick}
+            />
           </div>
         );
       }
@@ -238,139 +280,94 @@ export default class Principal extends React.Component {
         return null;
       }
       else if (this.props.cabecera == "Menú"){
-        if(this.props.index === -1 && this.props.data !== null){ //primera pantalla del menú (Elemento1, Elemento2...)
-          if(this.props.data.payload.menu !== undefined){
-            let arr= [];
-            arr.push(this.props.data.payload.menu.map((element, index) => {
-              let e = element.item_text;
-              if(element.hasChild){
-                //si hay hijos bajo ese boton que estoy preparando solo le paso el index del boton que clicko
-                //si no hay hijos le paso el index, que realmente no sirve para nada mas que para saber cual pintar, y la item_key que ira en al json
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
-              }else{
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
-              }
-            }));
-            return (
-              <div>
-                <Row>Escoja una opción</Row>
-                {arr}
-                <Row>
-                  <button onClick={this.botonClick}>Seleccionar</button>
-                  <button onClick={this.arribaClick}>Arriba</button>
-                  <button onClick={this.abajoClick}>Abajo</button>
+        console.log("CurrentMenuItem en Principal", this.props.currentMenuItem);
+        if(this.props.currentMenuItem !== undefined 
+        && this.props.currentMenuItem.children !== undefined){
+          console.log("Ha entrado a children en Principal", this.props.currentMenuItem);
+          let menuItems = [];
+          menuItems.push(this.props.currentMenuItem.children.map((element, index) => {
+            let e = element.item_text;
+            if(element.hasChild){
+              //si hay hijos bajo ese boton que estoy preparando solo le paso el index del boton que clicko
+              //si no hay hijos le paso el index, que realmente no sirve para nada mas que para saber cual pintar, y la item_key que ira en al json
+              return(
+                // <MenuItemCore key={index} onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</MenuItemCore>
+                <Row key={index}  style={{display: "grid"}}>
+                  <Button 
+                  variant="contained" 
+                  className={classes.button} 
+                  onClick={()=>this.props.appClick(this.props.cabecera, index, true, element)}>
+                    {e}
+                  </Button>
                 </Row>
-              </div>
-            );
-          }
-          else if(this.props.data.payload.data_code === "OK"){
-            let arr= [];
-            arr.push(this.props.menu.map((element, index) => {
-              let e = element.item_text;
-              if(element.hasChild){
-                //si hay hijos bajo ese boton que estoy preparando solo le paso el index del boton que clicko
-                //si no hay hijos le paso el index, que realmente no sirve para nada mas que para saber cual pintar, y la item_key que ira en al json
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
-              }else{
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
-              }
-            }));
-            return (
-              <div>
-                <Row>Escoja una opción</Row>
-                {arr}
-                <Row>
-                  <button onClick={this.botonClick}>Seleccionar</button>
-                  <button onClick={this.arribaClick}>Arriba</button>
-                  <button onClick={this.abajoClick}>Abajo</button>
+              );
+            }else{
+              return(
+                // <MenuItemCore key={index} onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</MenuItemCore>
+                <Row key={index}  style={{display: "grid"}}>
+                  <Button 
+                  variant="contained" 
+                  className={classes.button} 
+                  onClick={()=>this.props.appClick(this.props.cabecera, index, false, element.item_key)}>
+                    {e}
+                  </Button>
                 </Row>
-              </div>
-            );
-          }
-          return null;
-        }
-        else{
-          if(this.props.keyp === undefined && this.props.data.payload.menu !== undefined){ //hay hijos
-            let sol = this.props.data.payload.menu[this.props.index].children.map((element, index)=>{
-              if(element.hasChild){
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{element.item_text}</button></Row>);
-              }else{
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
-              }
-            });
-            return(
-              <div>
-                <Row>Escoja una opción</Row>
-                {sol}
-                <Row>
-                  <button onClick={this.volverClick}>Volver</button>
-                </Row>
-                <Row>
-                  <button onClick={this.botonClick}>Seleccionar</button>
-                  <button onClick={this.arribaClick}>Arriba</button>
-                  <button onClick={this.abajoClick}>Abajo</button>
-                </Row>
-              </div>
-            );
-          }
-          else if(this.props.data.payload.data_code === "OK"){
-            let sol = this.props.menu[this.props.index].children.map((element, index)=>{
-              if(element.hasChild){
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{element.item_text}</button></Row>);
-              }else{
-                return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{element.item_text}</button></Row>);
-              }
-            });
-            return sol;
-          }
-          else if(this.props.data !== null && this.props.data.payload.data_code === "ACTION_NEW" && this.props.data.payload.screenContent !== undefined){
-            let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
-              //if(element.text !== "Salir"){
-                let texto = element.code + ": " + element.text;
-                return(
-                  <button key={index} onClick={()=>this.props.appClick(this.props.cabecera, index, undefined, document.getElementById("menu-input").value, element.code)}>{texto}</button>
-                );
-              //}
-              return null;
-            });
-            return(
-                <div>
-                  <Row><div>{this.props.data.payload.screenContent.title}</div></Row>
-                  <Row><div>{this.props.data.payload.screenContent.content}</div></Row>
-                  <Row><div>{this.props.data.payload.screenContent.message}</div></Row>
-                  <Row><input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/></Row>
-                  <Row>{botones}</Row>
-                </div>
-            );
-            return null;
-          }
+              );
+            }
+          }));
+          return (
+            <div>
+              <Row>{this.props.currentMenuItem.item_text}</Row>
+              {menuItems}
+              <Row>
+                <Button disabled={!this.props.volverEnabled} variant="contained" color={colorVolver} className={classes.button} onClick={this.volverClick}>
+                  Volver
+                </Button>
+              </Row>
+              {/* <Row>
+                <button onClick={this.botonClick}>Seleccionar</button>
+                <button onClick={this.arribaClick}>Arriba</button>
+                <button onClick={this.abajoClick}>Abajo</button>
+              </Row> */}
+            </div>
+          );
+        }else{
           return null;
         }
       }
+      else if (this.props.cabecera == "Acción"){
+        if(this.props.data !== null && this.props.data.payload.data_code === "ACTION_NEW" && this.props.data.payload.screenContent !== undefined){
+          let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
+            let texto = element.code + ": " + element.text;
+            return(
+              <Button variant="contained" color="primary" className={classes.button} key={index} 
+              onClick={()=>this.props.appClick(this.props.cabecera, index, undefined, this.state.inputTerminal ? this.state.inputTerminal : "0", element.code)}>
+                {texto}
+              </Button>
+            );
+          });
+          return(
+              <div>
+                <Row><div>{this.props.data.payload.screenContent.title}</div></Row><br />
+                <Row><div>{this.props.data.payload.screenContent.content}</div></Row><br />
+                <Row><div>{this.props.data.payload.screenContent.message}</div></Row><br />
+                <Row>
+                    {/* <input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/> */}
+                    <TextField
+                      hintText="Input terminal"
+                      floatingLabelText="Input"
+                      id="menu-input"
+                      value={this.state.inputTerminal}
+                      onChange={(e, value) => this.setState({inputTerminal: value})}
+                    /><br />
+                </Row>
+                <Row>{botones}</Row>
+              </div>
+          );
+        }
+      }
       else{
-        let arr= [];
-        arr.push(this.props.menu.map((element, index) => {
-          let e = element.item_text;
-          if(element.hasChild){
-            return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index)}>{e}</button></Row>);
-          }else{
-            return(<Row key={index}><button onClick={()=>this.props.appClick(this.props.cabecera, index, element.item_key)}>{e}</button></Row>);
-          }
-        }));
-        return (
-          <div>
-            <Row>Escoja una opción</Row>
-            {arr}
-            <Row>
-              <button onClick={this.volverClick}>Volver</button>
-            </Row>
-            <Row>
-              <button onClick={this.botonClick}>Seleccionar</button>
-              <button onClick={this.arribaClick}>Arriba</button>
-              <button onClick={this.abajoClick}>Abajo</button>
-            </Row>
-          </div>
-        );
+        return null;
       }
     }
   }
@@ -395,7 +392,7 @@ export default class Principal extends React.Component {
 
   volverClick(){
     console.log("¡VolverClick!");
-    this.props.appClick(this.props.cabecera, -1);
+    this.props.volverClick();
   }
   handleChangeSelect(select, value){
     if(select === "almacen"){
@@ -437,8 +434,8 @@ export default class Principal extends React.Component {
       this.props.appClick(this.props.cabecera, this.state);
     }
     else if(this.props.cabecera == "Cambiar clave"){
-      if (document.getElementById("Clave").value === document.getElementById("NewClave").value){
-        this.props.appClick(this.props.cabecera, document);
+      if (this.state.valueinput1 === this.state.valueinput2){
+        this.props.appClick(this.props.cabecera, this.state);
       }else{
         window.alert("Las contraseñas no coinciden")
       }
@@ -457,3 +454,9 @@ export default class Principal extends React.Component {
   }
 
 }
+
+Principal.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(Principal);

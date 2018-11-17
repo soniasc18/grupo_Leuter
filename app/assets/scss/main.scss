@@ -15,10 +15,16 @@ button{
     border: 0px solid #58ACFA;
     margin-top: 0.5em;
 }
+html, body, #app, #app>div {
+  height: 100%
+}
 
 body {
   text-align: center;
   background: #F2F2F2;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
 
   .titulo{
     font-family: 'Titillium Web', sans-serif;

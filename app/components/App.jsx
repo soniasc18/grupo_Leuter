@@ -3,10 +3,31 @@ import './../assets/scss/main.scss';
 import Superior from './Superior.jsx';
 import Inferior from './Inferior.jsx';
 import Principal from './Principal.jsx';
-import { Grid, Row, Col } from 'react-bootstrap';
+import {Row, Col } from 'react-bootstrap';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import Paper from '@material-ui/core/Paper';
+import { withStyles } from '@material-ui/core/styles';
+import PropTypes from 'prop-types';
+import Grid from "@material-ui/core/Grid";
 
-export default class App extends React.Component {
+const styles = theme => ({
+  root: {
+    display: 'flex',
+    maxWidth: "100%",
+    maxHeight: "100%",
+    overflow: "hidden"
+  },
+  paper: {
+    margin: "auto"
+  },
+  keyboard: {
+    position: "fixed",
+    bottom: "0px",
+    left: "0px"
+  }
+});
+
+class App extends React.Component {
 
   constructor(props) {
     super(props);
@@ -26,10 +47,16 @@ export default class App extends React.Component {
       click:true,
       loggedIn: false, 
       pressedKey: undefined,
-      isLoading: false
+      isLoading: false,
+      actionId: 0,
+      currentMenuItem: {
+        item_text: "Inicio"
+      },
+      menuStack: new Map()
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
+    this.volverClick = this.volverClick.bind(this);
   }
 
   handleData(e) {
@@ -85,14 +112,20 @@ export default class App extends React.Component {
       this.setState({
         cabecera: "Menú",
         data: result,
-        isLoading: false
+        isLoading: false,
+        currentMenuItem:{
+          item_text: "Inicio",
+          children: result.payload.menu
+        }
       });
     }
     else if(this.state.cabecera === "Menú"){
       if(result.payload.data_code === "ACTION_NEW"){
         this.setState({
           data: result,
-          isLoading: false
+          isLoading: false,
+          actionId: this.state.actionId + 1,
+          cabecera: "Acción"
         });
       }
       else if(result.payload.data_code === "OK"){
@@ -103,7 +136,8 @@ export default class App extends React.Component {
           isLoading: false
         });
       }
-    }else if(this.state.cabecera === "Cambiar clave"){      
+    }
+    else if(this.state.cabecera === "Cambiar clave"){      
       if(result.payload.data_code==="OK" && result.payload.loginFields.nextStep === "LOGIN_MENU"){
         this.setState({
           cabecera: "Inicio sesión",
@@ -114,11 +148,34 @@ export default class App extends React.Component {
         });
       }
     }
+    else if(this.state.cabecera === "Acción"){
+      if(result.payload.data_code === "ACTION_NEW"){
+        this.setState({
+          data: result,
+          isLoading: false,
+          actionId: this.state.actionId + 1,
+          cabecera: "Acción"
+        });
+      }
+      else if(result.payload.data_code === "OK"){
+        console.log("Volviendo al Menú desde Acción");
+        console.log("CurrentMenuItem", this.state.currentMenuItem);
+        console.log("Stack", this.state.menuStack);
+        console.log("Volviendo al Menú desde Acción");
+        this.setState({
+          index: -1,
+          inputt: undefined,
+          data: result,
+          isLoading: false,
+          cabecera: "Menú"
+        });
+      }
+    }
   }
 
   componentDidUpdate(prevProps, prevState){
-    //let url = "ws://api.grupoleuter.com";
-    let url = "ws://localhost:8080/compassapi";
+    let url = "ws://api.grupoleuter.com";
+    //let url = "ws://localhost:8080/compassapi";
     if (this.state.cabecera==="Login" && prevState.cabecera === this.state.cabecera && !this.state.tunel && this.state.click){
       //hacer que cuando le des click solo entre aqui una vez, ya sea metiendo otro atributo o lo que sea
       //pq si entra aqui mas de una vez no deja de enviar msg al servidor
@@ -217,7 +274,9 @@ export default class App extends React.Component {
         connection.onmessage = this.handleData.bind(this);
         console.log(connection);
       }
-      else if(this.state.keyp === undefined && !this.state.wait && this.state.inputt !== undefined){
+    }
+    else if(this.state.cabecera === "Acción"){
+      if(this.state.keyp === undefined && !this.state.wait && this.state.inputt !== undefined){
         //justo antes de entrar al else if este prevState.keyp no era undefined, al reves con inputt
         this.setState({wait:true});
         let connection = new WebSocket(url+'/action');
@@ -240,33 +299,66 @@ export default class App extends React.Component {
   }
 
   render() {
+    const { classes } = this.props;
     console.log("Cabecera en App: -" + this.state.cabecera + "-");
+    console.log("CurrentMenuItem en App", this.state.currentMenuItem);
     return (
-      <MuiThemeProvider>
-        <Grid className="container">
-          <Row>
+        <MuiThemeProvider> 
+          <div>
             <Superior cabecera={this.state.cabecera}/>
-          </Row>
-          <Row className="Ppal">
-            <Principal
-              cabecera={this.state.cabecera}
-              debug={this.state.debug}
-              data={this.state.data}
-              index={this.state.index}
-              keyp={this.state.keyp}
-              menu={this.state.menu}
-              visible={this.state.visible}
-              isLoading={this.state.isLoading}
-              appClick={this.appClick}/>
-          </Row>
-          <Row className="Pie">
-            <Inferior
-              salirClick={this.salirClick} 
-              loggedIn={this.state.loggedIn}/>
-          </Row>
-        </Grid>
-      </MuiThemeProvider>
+
+            <div className={classes.root}>
+              <Grid container spacing={24} direction="column">
+                <Grid
+                  container
+                  spacing={0}
+                  direction="column"
+                  alignItems="center"
+                  justify="center"
+                  style={{ minHeight: '100vh' }}>
+                  <Grid item>
+                    <Paper className={classes.paper}>        
+                      <Row className="Ppal">
+                        <Principal
+                          cabecera={this.state.cabecera}
+                          debug={this.state.debug}
+                          data={this.state.data}
+                          index={this.state.index}
+                          keyp={this.state.keyp}
+                          menu={this.state.menu}
+                          visible={this.state.visible}
+                          isLoading={this.state.isLoading}
+                          appClick={this.appClick}
+                          volverClick={this.volverClick}
+                          actionId = {this.state.actionId}
+                          currentMenuItem = {this.state.currentMenuItem}
+                          volverEnabled = {this.state.menuStack.size > 0} />
+                      </Row>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Grid>
+
+            
+              <Row className="Pie">
+                <Inferior
+                  salirClick={this.salirClick} 
+                  loggedIn={this.state.loggedIn}/>
+              </Row>
+            </div>
+            <div style={styles.keyboard}>
+            </div>
+          </div>
+        </MuiThemeProvider>
     );
+  }
+
+  onChange(input) {
+    console.log("Input changed", input);
+  }
+
+  onKeyPress(button) {
+    console.log("Button pressed", button);
   }
 
   appClick(cabecera, document, keyp, inputt, pressedKeyCode) {
@@ -285,7 +377,7 @@ export default class App extends React.Component {
     }
     else if(cabecera == "Cambiar clave"){
       this.setState({
-        input3: document.getElementById("Clave").value,
+        input3: document.valueinput1,
         isLoading: true
       });
     }
@@ -299,22 +391,34 @@ export default class App extends React.Component {
       });
     }
     else if(cabecera == "Menú"){
-      if(document == -1){
+      //En keypt tenemos true si tiene hijos y en inputt el padre
+      if(keyp){
         this.setState({
           keyp: undefined,
-          index: document
-        });
-      }else{
-        this.setState({
-          //si sigue habiendo hijos keyp tendrá undefined
-          index: document,
-          keyp: keyp,
-          inputt: inputt,
-          wait:false,
-          pressedKey: pressedKeyCode,
-          isLoading: (keyp !== undefined)
+          menuStack: this.state.menuStack.set(this.state.menuStack.size + 1, this.state.currentMenuItem),
+          currentMenuItem: inputt
         });
       }
+      //Si keyp es false, entonces tendremos la key pulsada en inputt
+      else{
+        this.setState({
+          index: document,
+          keyp: inputt,
+          wait: false,
+          isLoading: (inputt !== undefined)
+        });
+      }
+    }
+    else if(cabecera == "Acción"){
+      this.setState({
+        //si sigue habiendo hijos keyp tendrá undefined
+        index: document,
+        keyp: keyp,
+        inputt: inputt,
+        wait:false,
+        pressedKey: pressedKeyCode,
+        isLoading: (keyp !== undefined)
+      });
     }
     else if(cabecera == "¿Cerrar sesión existente?"){
       if(keyp == "Y"){
@@ -346,4 +450,22 @@ export default class App extends React.Component {
     });
   }
 
+  volverClick() {
+    if(this.state.menuStack.size > 0){
+      let newCurrentMenuItem = this.state.menuStack.get(this.state.menuStack.size);
+      let newMenuStack = this.state.menuStack;
+      newMenuStack.delete(newMenuStack.size);
+      this.setState({
+        currentMenuItem: newCurrentMenuItem,
+        menuStack: newMenuStack
+      });
+    }
+  }
+
 }
+
+App.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(App);
