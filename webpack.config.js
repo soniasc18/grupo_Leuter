@@ -1,7 +1,6 @@
 const { resolve } = require('path');
 
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const OpenBrowserPlugin = require('open-browser-webpack-plugin');
 
@@ -54,15 +53,13 @@ const config = {
         use: {
             loader: 'babel-loader',
             options: {
-                presets: ['es2015', 'react'],
+                presets: ['es2015', '@babel/react'],
             },
         },
       },
       {
         test: /\.js$/,
-        loaders: [
-          'babel-loader',
-        ],
+        loaders: ['babel-loader'],
         exclude: /node_modules/,
       },
       {

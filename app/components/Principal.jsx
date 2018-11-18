@@ -1,24 +1,29 @@
 import React from 'react';
-import { Grid, Row, Col } from 'react-bootstrap';
+import {Row} from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import Websocket from 'react-websocket';
-import RaisedButton from 'material-ui/RaisedButton';
-import CircularProgress from 'material-ui/CircularProgress';
-import SelectField from 'material-ui/SelectField';
-import MenuItem from 'material-ui/MenuItem';
-import TextField from 'material-ui/TextField';
-import Dialog from 'material-ui/Dialog';
-import FlatButton from 'material-ui/FlatButton';
-import ActionLogin from 'material-ui/svg-icons/action/lock-open';
-import ActionStart from 'material-ui/svg-icons/action/done';
-import ActionSettings from 'material-ui/svg-icons/action/settings';
-import FontIcon from 'material-ui/FontIcon';
-import AppBar from 'material-ui/AppBar';
-import MenuItemCore from '@material-ui/core/MenuItem';
-import MenuList from '@material-ui/core/MenuList';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import SelectField from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Slide from '@material-ui/core/Slide';
+import ActionLogin from '@material-ui/icons/LockOpen'
+import ActionStart from '@material-ui/icons/Done';
+import ActionCancel from '@material-ui/icons/Cancel';
+import ActionSettings from '@material-ui/icons/Settings';
 import Button from '@material-ui/core/Button';
-
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import FormControl from '@material-ui/core/FormControl';
+import IconButton from '@material-ui/core/IconButton';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import InputAdornment from '@material-ui/core/InputAdornment';
 
 const styles = theme => ({
   button: {
@@ -50,12 +55,16 @@ const styles = theme => ({
   },
 });
 
+function Transition(props) {
+  return <Slide direction="up" {...props} />;
+}
+
 class Principal extends React.Component {
 
   constructor(props) {
     super(props);
 
-    let url = new URL(this.props.debug ? "http://terminal.grupoleuter.com?empresa=123456&operario=SUP" : window.location.href);
+    let url = new URL(window.location.href);
     let empresaURL = url.searchParams.get("empresa");
     let operarioURL = url.searchParams.get("operario");
 
@@ -74,7 +83,9 @@ class Principal extends React.Component {
       operario: operarioURL ? operarioURL : "",
       clave: "", 
       inputTerminal: "",
-      actionId: 0
+      actionId: 0,
+      showPassword: false,
+      focusedInput: ""
     }
     this.botonClick = this.botonClick.bind(this);
     this.abajoClick = this.abajoClick.bind(this);
@@ -83,6 +94,7 @@ class Principal extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.botonClick1 = this.botonClick1.bind(this);
     this.botonClick2 = this.botonClick2.bind(this);
+    this.changeFocusedInput = this.changeFocusedInput.bind(this);
   }
 
   render() {
@@ -90,6 +102,7 @@ class Principal extends React.Component {
     const colorVolver = "primary";
     console.log("Cabecera en Principal: -" + this.props.cabecera + "-");
     console.log("isLoading en Principal: -" + this.props.isLoading + "-");
+    console.log("focusedInput:", this.state.focusedInput);
 
     if(this.state.actionId != this.props.actionId) this.setState({inputTerminal: "", actionId: this.props.actionId});
 
@@ -102,44 +115,32 @@ class Principal extends React.Component {
       );
     }else{    
       if (this.props.cabecera === "Login"){
-        let visibility = "hidden"
-        // if(this.props.data !== null){
-        //   this.props.data.payload.data_code="ALREADY_LOGGED_IN";
-        //   if(this.props.data.payload.data_code==="ALREADY_LOGGED_IN"){
-        //     visibility="visible";
-        //   }
-        // }
         return (
-          <div>
-            {/* <form className="login">
-              <Row className="input">
-                <label>Empresa: <input type="text" className="login-input" name="Empresa" id="Empresa" placeholder="Introduce código de empresa" defaultValue={empresa}/>
-                </label>
-              </Row>
-              <Row className="input">
-                <label>Operario: <input type="text" className="login-input" name="Usuario" id="Usuario" placeholder="OP" placeholder="Introduce id de operario" defaultValue={operario}/></label>
-              </Row>
-              <Row className="input">
-                <label>Clave:   <input type="password" className="Clave" id="Clave" placeholder="password" autoComplete="off"placeholder="Introduce clave" defaultValue=""/></label>
-              </Row>
-            </form> */}
-
-            
+          <div> 
+            <br />           
             <TextField
-              hintText="Código de empresa CXXXXXXXXX"
-              floatingLabelText="Empresa"
+              fullWidth
+              placeholder="Código de empresa CXXXXXXXXX"
+              label="Empresa"
               value={this.state.empresa}
-              id="empresa"
-              onChange={(e, value) => this.setState({empresa: value})}
-            /><br />
+              id="empresa"          
+              onChange={this.handleChange}
+              inputProps={{
+                name: "empresa"
+              }}
+            /><br /><br />
             <TextField
-              hintText="Usuario"
-              floatingLabelText="Nombre del operario"
+              fullWidth
+              placeholder="Usuario"
+              label="Nombre del operario"
               value={this.state.operario}
               id="usuario"
-              onChange={(e, value) => this.setState({operario: value})}
-            /><br />
-            <TextField
+              onChange={this.handleChange}
+              inputProps={{
+                name: "operario"
+              }}
+            /><br /><br />
+            {/* <TextField
               hintText="Password"
               floatingLabelText="Password"
               value={this.state.clave}
@@ -147,25 +148,99 @@ class Principal extends React.Component {
               onChange={(e, value) => this.setState({clave: value})}
               type="password"
               autoFocus
-            /><br />
+            /><br /> */}
+            
+            <FormControl fullWidth>
+              <InputLabel htmlFor="adornment-password">Password</InputLabel>
+              <Input
+                id="clave"
+                type={this.state.showPassword ? 'text' : 'password'}
+                value={this.state.clave}
+                onChange={this.handleChange}
+                autoFocus
+                inputProps={{
+                  name: "clave"
+                }}
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Toggle password visibility"
+                      onClick={(e, value) => this.setState({showPassword: !this.state.showPassword})}
+                    >
+                      {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
 
-            <h5 style={{visibility:!this.props.visible?"hidden":"visible"}}>Credenciales incorrectas</h5>
-            <h5 style={{visibility:visibility}}>Sesión ya iniciada</h5>
-            <RaisedButton
-              label="Login"
-              primary={true}
+            <h5 style={{visibility: !this.props.visible ? "hidden" : "visible"}}>Credenciales incorrectas</h5>
+            <Button 
+              variant="contained" 
+              color="primary" 
               style={styles.button}
-              icon={<ActionLogin />}
-              onClick={this.botonClick}
-            />
-            {/*<button onClick={this.botonClick}>Log in</button>*/}
+              onClick={this.botonClick}>
+              <ActionLogin />
+              Login
+            </Button>
           </div>
         );
       }
-      else if (this.props.cabecera == "Cambiar clave"){
+      else if (this.props.cabecera === "Cambiar clave"){
         return (
           <div>
-            <TextField
+            
+          <FormControl fullWidth>
+            <InputLabel htmlFor="adornment-password">Password</InputLabel>
+            <Input
+              id="adornment-password"
+              type={this.state.showPassword ? 'text' : 'password'}
+              value={this.state.valueinput1}
+              onFocus={this.changeFocusedInput("valueinput1")}
+              onChange={this.handleChange}
+              inputProps={{
+                name: 'valueinput1'
+              }}
+              placeholder="Nueva clave"
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="Toggle password visibility"
+                    onClick={(e, value) => this.setState({showPassword: !this.state.showPassword})}
+                  >
+                    {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          </FormControl>
+            
+            <FormControl fullWidth>
+              <InputLabel htmlFor="adornment-password">Password</InputLabel>
+              <Input
+                id="adornment-password"
+                type={this.state.showPassword ? 'text' : 'password'}
+                value={this.state.valueinput2}
+                onFocus={this.changeFocusedInput("valueinput2")}
+                onChange={this.handleChange}
+                inputProps={{
+                  name: 'valueinput2'
+                }}
+                placeholder="Repetir clave"
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Toggle password visibility"
+                      onClick={(e, value) => this.setState({showPassword: !this.state.showPassword})}
+                    >
+                      {this.state.showPassword ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+
+    {/*         <TextField
               hintText="Password"
               floatingLabelText="Nueva contraseña"
               value={this.state.valueinput1}
@@ -181,29 +256,46 @@ class Principal extends React.Component {
               id="NewClave"
               onChange={(e, value) => this.setState({valueinput2: value})}
               type="password"
-            /><br />
-            <RaisedButton
+            /><br /> */}
+
+            {/* <RaisedButton
               label="Guardar"
               primary={true}
               style={styles.button}
               icon={<ActionSettings />}
               onClick={this.botonClick}
-            />
+            /> */}
+            <Button 
+              variant="contained" 
+              color="primary" 
+              style={styles.button}
+              onClick={this.botonClick}>
+              <ActionSettings />
+              Guardar
+            </Button>
           </div>
         );
       }
-      else if (this.props.cabecera == "¿Cerrar sesión existente?"){
+      else if (this.props.cabecera === "¿Cerrar sesión existente?"){
         const actions = [
-          <FlatButton
-            label="Sí, iniciar nueva sesión"
-            primary={true}
-            onClick={this.botonClick1}
-          />,
-          <FlatButton
-            label="No, cambiar de usuario"
-            primary={false}
-            onClick={this.botonClick2}
-          />,
+          <Button 
+            key="1"
+            variant="contained" 
+            color="primary" 
+            style={styles.button}
+            onClick={this.botonClick1}>
+            <ActionStart />
+            Sí, iniciar nueva sesión
+          </Button>,
+          <Button 
+            key="2"
+            variant="contained" 
+            color="secondary" 
+            style={styles.button}
+            onClick={this.botonClick2}>
+            <ActionCancel />
+            No, cambiar de usuario
+          </Button>
         ];
         return (
           // <div>
@@ -214,37 +306,105 @@ class Principal extends React.Component {
             <Dialog
               title="Iniciar sesión de todas formas"
               actions={actions}
-              modal={true}
+              modal="true"
               open={true}>
               Ya hay una sesión iniciada con ese usuario, ¿quieres cerrar su sesión e iniciar una nueva?
+            </Dialog>
+
+            <Dialog
+              open={true}
+              TransitionComponent={Transition}
+              keepMounted
+              aria-labelledby="alert-dialog-slide-title"
+              aria-describedby="alert-dialog-slide-description"
+            >
+              <DialogTitle id="alert-dialog-slide-title">
+                {"Iniciar sesión de todas formas"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-slide-description">
+                Ya hay una sesión iniciada con ese usuario, ¿quieres cerrar su sesión e iniciar una nueva?
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                {actions}
+              </DialogActions>
             </Dialog>
           </div>
         );
       }
-      else if (this.props.cabecera == "Inicio sesión"){
+      else if (this.props.cabecera === "Inicio sesión"){
         console.log("state.maquina: -" + this.state.maquina + "-");
         console.log("state.almacen: -" + this.state.almacen + "-");
         console.log("state.idioma: -" + this.state.idioma + "-");
         while(this.props.data !== null && this.props.data.payload.loginFields.warehouses !== undefined){
           let warehouses = this.props.data.payload.loginFields.warehouses.map((element, index) => {
             return(
-              <MenuItem value={element} primaryText={element} key={element}/>
+              <MenuItem value={element} key={element}>{element}</MenuItem>
             );
           });
           let machines = this.props.data.payload.loginFields.machines.map((element, index) => {
             return(
               //<option key={index}>{element}</option>
-              <MenuItem value={element} primaryText={element} key={element}/>
+              <MenuItem value={element} key={element}>{element}</MenuItem>
             );
           });
           let languages = this.props.data.payload.loginFields.languages.map((element, index) => {
             return(
-              <MenuItem value={element} primaryText={element} key={element}/>
+              <MenuItem value={element} key={element}>{element}</MenuItem>
             );
           });
           return (
             <div>
-              <div><SelectField
+              <div>                
+                <FormControl fullWidth>
+                  <InputLabel>Almacén</InputLabel>
+                  <SelectField
+                    value={this.state.almacen}
+                    onChange={this.handleChange}
+                    inputProps={{
+                      name: 'almacen',
+                      id: 'almacen',
+                    }}
+                  >
+                      <MenuItem value="" disabled>
+                        Elegir un almacén
+                      </MenuItem>
+                      {warehouses}
+                  </SelectField>
+                </FormControl>
+              </div><br />
+              <div>                
+                <FormControl fullWidth>
+                  <InputLabel>Máquina</InputLabel>
+                  <SelectField
+                    value={this.state.maquina}
+                    onChange={this.handleChange}
+                    inputProps={{
+                      name: 'maquina',
+                      id: 'maquina',
+                    }}
+                  >
+                      {machines}
+                  </SelectField>
+                </FormControl>
+              </div><br />
+              <div>                
+                <FormControl fullWidth>
+                  <InputLabel>Idioma</InputLabel>
+                  <SelectField
+                    value={this.state.idioma}
+                    onChange={this.handleChange}
+                    inputProps={{
+                      name: 'idioma',
+                      id: 'idioma',
+                    }}
+                  >
+                      {languages}
+                  </SelectField>
+                </FormControl>
+              </div><br />
+              {/*<div><SelectField
                               floatingLabelText="Almacén" 
                               id="almacen"
                               value={this.state.almacen}
@@ -265,7 +425,7 @@ class Principal extends React.Component {
                               onChange={(e, index, value) => this.handleChangeSelect("idioma", value)}>
                                 {languages}
                             </SelectField>
-              {/* <select id="idioma">{languages}</select> */}
+               <select id="idioma">{languages}</select> 
               </div>
               <RaisedButton
                 label="Comenzar"
@@ -273,15 +433,23 @@ class Principal extends React.Component {
                 style={styles.button}
                 icon={<ActionStart />}
                 onClick={this.botonClick}
-              />
+              />*/}
+              <Button 
+                variant="contained" 
+                color="primary" 
+                style={styles.button}
+                onClick={this.botonClick}>
+                <ActionStart />
+                Comenzar
+              </Button>
             </div>
           );
         }
         return null;
       }
-      else if (this.props.cabecera == "Menú"){
+      else if (this.props.cabecera === "Menú"){
         console.log("CurrentMenuItem en Principal", this.props.currentMenuItem);
-        if(this.props.currentMenuItem !== undefined 
+        if(this.props.currentMenuItem !== undefined
         && this.props.currentMenuItem.children !== undefined){
           console.log("Ha entrado a children en Principal", this.props.currentMenuItem);
           let menuItems = [];
@@ -335,7 +503,7 @@ class Principal extends React.Component {
           return null;
         }
       }
-      else if (this.props.cabecera == "Acción"){
+      else if (this.props.cabecera === "Acción"){
         if(this.props.data !== null && this.props.data.payload.data_code === "ACTION_NEW" && this.props.data.payload.screenContent !== undefined){
           let botones = this.props.data.payload.screenContent.keys.map((element, index) => {
             let texto = element.code + ": " + element.text;
@@ -354,11 +522,14 @@ class Principal extends React.Component {
                 <Row>
                     {/* <input type="text" className="menu-input" name="menu-input" id="menu-input" defaultValue="123"/> */}
                     <TextField
-                      hintText="Input terminal"
-                      floatingLabelText="Input"
+                      placeholder="Input terminal"
+                      label="Input"
                       id="menu-input"
                       value={this.state.inputTerminal}
-                      onChange={(e, value) => this.setState({inputTerminal: value})}
+                      onChange={this.handleChange}
+                      inputProps={{
+                        name: "inputTerminal"
+                      }}
                     /><br />
                 </Row>
                 <Row>{botones}</Row>
@@ -409,20 +580,26 @@ class Principal extends React.Component {
       });
     }
   }
-  handleChange(e, index, value){
-    if(e.target.name === "Clave"){
+
+  handleChange = (event) => {
+    console.log("handleChange: " + event.target + "->" + event.target.value);
+    console.log("target",event.target.name);
+    this.setState({
+      [event.target.name]: event.target.value
+    });
+  }
+
+  changeFocusedInput(inputName){
+    console.log("En changeFocusedInput", inputName);
+    if(this.state.focusedInput !== inputName){
       this.setState({
-        valueinput1: value,
-      });
-    }else if(e.target.name === "NewClave"){
-      this.setState({
-        valueinput2: value,
-      });
+        focusedInput: inputName
+      })      
     }
   }
 
   botonClick(){
-    if(this.props.cabecera == "Login"){
+    if(this.props.cabecera === "Login"){
       if(this.state.empresa === "" || this.state.operario === "" || this.state.clave === ""){
         window.alert("Rellena todo el formulario")
       }
@@ -430,10 +607,10 @@ class Principal extends React.Component {
         this.props.appClick(this.props.cabecera, this.state);
       }
     }
-    else if (this.props.cabecera == "Inicio sesión"){
+    else if (this.props.cabecera === "Inicio sesión"){
       this.props.appClick(this.props.cabecera, this.state);
     }
-    else if(this.props.cabecera == "Cambiar clave"){
+    else if(this.props.cabecera === "Cambiar clave"){
       if (this.state.valueinput1 === this.state.valueinput2){
         this.props.appClick(this.props.cabecera, this.state);
       }else{
@@ -452,11 +629,13 @@ class Principal extends React.Component {
     console.log("botonClick2 en Principal: -N-");
     this.props.appClick(this.props.cabecera, document, "N");
   }
-
+  componentDidUpdate(prevProps, prevState){ 
+    console.log("Input con focus", document.activeElement.id);
+  }
 }
 
 Principal.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(Principal);
