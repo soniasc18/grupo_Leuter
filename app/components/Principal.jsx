@@ -74,8 +74,8 @@ class Principal extends React.Component {
       document: document,
       url: url,
       seleccion: 0,
-      valueinput1: "",
-      valueinput2: "",
+      newPass1: "",
+      newPass2: "",
       almacen: "",
       maquina: "",
       idioma: "",
@@ -85,7 +85,7 @@ class Principal extends React.Component {
       inputTerminal: "",
       actionId: 0,
       showPassword: false,
-      focusedInput: ""
+      focusedElementChange: this.props.focusedElementChange
     }
     this.botonClick = this.botonClick.bind(this);
     this.abajoClick = this.abajoClick.bind(this);
@@ -94,7 +94,8 @@ class Principal extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.botonClick1 = this.botonClick1.bind(this);
     this.botonClick2 = this.botonClick2.bind(this);
-    this.changeFocusedInput = this.changeFocusedInput.bind(this);
+    this.handleKeyboardKeyPressed = this.handleKeyboardKeyPressed.bind(this);
+    this.handleOnFocus = this.handleOnFocus.bind(this);
   }
 
   render() {
@@ -102,9 +103,16 @@ class Principal extends React.Component {
     const colorVolver = "primary";
     console.log("Cabecera en Principal: -" + this.props.cabecera + "-");
     console.log("isLoading en Principal: -" + this.props.isLoading + "-");
-    console.log("focusedInput:", this.state.focusedInput);
 
-    if(this.state.actionId != this.props.actionId) this.setState({inputTerminal: "", actionId: this.props.actionId});
+    if(this.state.actionId != this.props.actionId){
+      this.setState({inputTerminal: "", actionId: this.props.actionId});
+    }
+    if(this.props.focusedElementChange.id != this.state.focusedElementChange.id){
+      this.setState({
+        focusedElementChange: this.props.focusedElementChange,
+        [this.props.focusedElementChange.name]: this.props.focusedElementChange.value
+      })
+    }
 
     if(this.props.isLoading){
       return (
@@ -128,6 +136,7 @@ class Principal extends React.Component {
               inputProps={{
                 name: "empresa"
               }}
+              onFocus={this.handleOnFocus}
             /><br /><br />
             <TextField
               fullWidth
@@ -139,6 +148,7 @@ class Principal extends React.Component {
               inputProps={{
                 name: "operario"
               }}
+              onFocus={this.handleOnFocus}
             /><br /><br />
             {/* <TextField
               hintText="Password"
@@ -171,6 +181,7 @@ class Principal extends React.Component {
                     </IconButton>
                   </InputAdornment>
                 }
+                onFocus={this.handleOnFocus}
               />
             </FormControl>
 
@@ -195,11 +206,10 @@ class Principal extends React.Component {
             <Input
               id="adornment-password"
               type={this.state.showPassword ? 'text' : 'password'}
-              value={this.state.valueinput1}
-              onFocus={this.changeFocusedInput("valueinput1")}
+              value={this.state.newPass1}
               onChange={this.handleChange}
               inputProps={{
-                name: 'valueinput1'
+                name: 'newPass1'
               }}
               placeholder="Nueva clave"
               endAdornment={
@@ -212,6 +222,7 @@ class Principal extends React.Component {
                   </IconButton>
                 </InputAdornment>
               }
+              onFocus={this.handleOnFocus}
             />
           </FormControl>
             
@@ -220,11 +231,10 @@ class Principal extends React.Component {
               <Input
                 id="adornment-password"
                 type={this.state.showPassword ? 'text' : 'password'}
-                value={this.state.valueinput2}
-                onFocus={this.changeFocusedInput("valueinput2")}
+                value={this.state.newPass2}
                 onChange={this.handleChange}
                 inputProps={{
-                  name: 'valueinput2'
+                  name: 'newPass2'
                 }}
                 placeholder="Repetir clave"
                 endAdornment={
@@ -237,24 +247,25 @@ class Principal extends React.Component {
                     </IconButton>
                   </InputAdornment>
                 }
+                onFocus={this.handleOnFocus}
               />
             </FormControl>
 
     {/*         <TextField
               hintText="Password"
               floatingLabelText="Nueva contraseña"
-              value={this.state.valueinput1}
+              value={this.state.newPass1}
               id="Clave"
-              onChange={(e, value) => this.setState({valueinput1: value})}
+              onChange={(e, value) => this.setState({newPass1: value})}
               type="password"
               autoFocus
             /><br />
             <TextField
               hintText="Password"
               floatingLabelText="Repetir la contraseña"
-              value={this.state.valueinput2}
+              value={this.state.newPass2}
               id="NewClave"
-              onChange={(e, value) => this.setState({valueinput2: value})}
+              onChange={(e, value) => this.setState({newPass2: value})}
               type="password"
             /><br /> */}
 
@@ -530,6 +541,7 @@ class Principal extends React.Component {
                       inputProps={{
                         name: "inputTerminal"
                       }}
+                      onFocus={this.handleOnFocus}
                     /><br />
                 </Row>
                 <Row>{botones}</Row>
@@ -589,12 +601,9 @@ class Principal extends React.Component {
     });
   }
 
-  changeFocusedInput(inputName){
-    console.log("En changeFocusedInput", inputName);
-    if(this.state.focusedInput !== inputName){
-      this.setState({
-        focusedInput: inputName
-      })      
+  handleOnFocus(){
+    if(document.activeElement){
+      this.props.lastFocusedElement(document.activeElement);
     }
   }
 
@@ -611,7 +620,7 @@ class Principal extends React.Component {
       this.props.appClick(this.props.cabecera, this.state);
     }
     else if(this.props.cabecera === "Cambiar clave"){
-      if (this.state.valueinput1 === this.state.valueinput2){
+      if (this.state.newPass1 === this.state.newPass2){
         this.props.appClick(this.props.cabecera, this.state);
       }else{
         window.alert("Las contraseñas no coinciden")
@@ -629,8 +638,8 @@ class Principal extends React.Component {
     console.log("botonClick2 en Principal: -N-");
     this.props.appClick(this.props.cabecera, document, "N");
   }
-  componentDidUpdate(prevProps, prevState){ 
-    console.log("Input con focus", document.activeElement.id);
+  handleKeyboardKeyPressed = button =>{
+    console.log("Button pressed en Principal:", button);
   }
 }
 

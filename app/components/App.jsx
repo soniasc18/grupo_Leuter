@@ -52,11 +52,20 @@ class App extends React.Component {
       currentMenuItem: {
         item_text: "Inicio"
       },
-      menuStack: new Map()
+      menuStack: new Map(),
+      focusedElement: undefined,
+      focusedElementChange: {
+        id: 0,
+        value: "",
+        name: ""
+      }
     };
     this.appClick = this.appClick.bind(this);
     this.salirClick = this.salirClick.bind(this);
     this.volverClick = this.volverClick.bind(this);
+    this.keyboardKeyPressed = this.keyboardKeyPressed.bind(this);
+    this.principal = React.createRef();
+    this.lastFocusedElement = this.lastFocusedElement.bind(this);
   }
 
   handleData(e) {
@@ -310,6 +319,7 @@ class App extends React.Component {
     const { classes } = this.props;
     console.log("Cabecera en App: -" + this.state.cabecera + "-");
     console.log("CurrentMenuItem en App", this.state.currentMenuItem);
+    console.log("CurrentFocusedElement en App", this.state.focusedElement);
     return (
         <MuiThemeProvider> 
           <div>
@@ -328,6 +338,7 @@ class App extends React.Component {
                     <Paper className={classes.paper}>        
                       <Row className="Ppal">
                         <Principal
+                          ref={this.principal}
                           cabecera={this.state.cabecera}
                           debug={this.state.debug}
                           data={this.state.data}
@@ -340,7 +351,9 @@ class App extends React.Component {
                           volverClick={this.volverClick}
                           actionId = {this.state.actionId}
                           currentMenuItem = {this.state.currentMenuItem}
-                          volverEnabled = {this.state.menuStack.size > 0} />
+                          volverEnabled = {this.state.menuStack.size > 0} 
+                          lastFocusedElement = {this.lastFocusedElement}
+                          focusedElementChange = {this.state.focusedElementChange} />
                       </Row>
                     </Paper>
                   </Grid>
@@ -351,7 +364,8 @@ class App extends React.Component {
               <Row className="Pie">
                 <Inferior
                   salirClick={this.salirClick} 
-                  loggedIn={this.state.loggedIn}/>
+                  loggedIn={this.state.loggedIn}
+                  keyboardKeyPressed={this.keyboardKeyPressed}/>
               </Row>
             </div>
             <div style={styles.keyboard}>
@@ -467,6 +481,34 @@ class App extends React.Component {
         currentMenuItem: newCurrentMenuItem,
         menuStack: newMenuStack
       });
+    }
+  }
+
+  lastFocusedElement(element){
+    if(this.state.focusedElement != element){
+      this.setState({
+        focusedElement: element
+      })
+    }
+  }
+
+  keyboardKeyPressed(button){
+    console.log("Button pressed en App: ", button);
+    console.log("this.principal en App:", this.principal);
+    console.log("Input con focus", this.state.focusedElement);
+    
+    if(this.state.focusedElement.id){
+      let currentValue = this.state.focusedElement.value;
+      let newValue = currentValue + button;
+      this.state.focusedElement.value = newValue;
+
+      this.setState({
+        focusedElementChange: {
+          id: this.state.focusedElementChange.id + 1,
+          value: newValue,
+          name: this.state.focusedElement.name
+        }
+      })
     }
   }
 

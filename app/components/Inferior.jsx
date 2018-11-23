@@ -45,8 +45,13 @@ const styles = theme => ({
     marginLeft: theme.spacing.unit
   },
   keyboard:{
-    position: "fixed",
-    bottom: "0px"
+    position: "absolute",
+    bottom: "0px",
+    height: "100%"
+  },
+  keyboardDock:{
+    bottom: "0px",
+    height: "auto"
   }
 });
 class Inferior extends React.Component {
@@ -55,6 +60,7 @@ class Inferior extends React.Component {
     super(props);
     this.botonClick = this.botonClick.bind(this);
     this.toggleKeyboard = this.toggleKeyboard.bind(this);
+    this.onKeyPress = this.onKeyPress.bind(this);
     this.state = {
       showKeyboard: false
     }
@@ -83,14 +89,14 @@ class Inferior extends React.Component {
           </Button>
       </Tooltip>;
     let keyboardWrapper = 
-      <Dock position='bottom' isVisible={this.state.showKeyboard} dimMode='none'>
-        <Keyboard
-          style={styles.keyboard}
-          ref={r => (this.keyboard = r)}
-          onChange={input => this.onChange(input)}
-          onKeyPress={button => this.onKeyPress(button)}
-        />
-      </Dock>;
+      <div className="keyboardDock">
+        <Dock position='bottom' isVisible={this.state.showKeyboard} dimMode='none'>
+          <Keyboard
+            ref={r => (this.keyboard = r)}
+            onKeyPress={button => this.onKeyPress(button)}
+          />
+        </Dock>
+      </div>;
     let logoutButton = 
       <Tooltip title="Cerrar sesión" placement={this.state.showKeyboard ? "bottom" : "top"}>
           <Button variant="fab" onClick={this.botonClick} className={classes.fabButton} color={fab.color}>
@@ -128,6 +134,12 @@ class Inferior extends React.Component {
     this.setState({
       showKeyboard: !this.state.showKeyboard
     });
+  }
+  
+  onKeyPress = (button) => {
+    console.log("Inferior keypressed focus:", document.activeElement);
+    console.log("Button pressed", button);
+    this.props.keyboardKeyPressed(button);
   }
 }
 
